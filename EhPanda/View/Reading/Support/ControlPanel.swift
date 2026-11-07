@@ -122,17 +122,22 @@ struct ControlPanel<G: Gesture>: View {
     }
 
     /// Duo 半屏釘選模式：控制條放「背對摺痕」的那一側（螢幕外緣、拇指好夠）。
-    /// 視窗釘在左半邊時，摺痕會落在視窗右緣 → 控制條改放左緣；
-    /// 偵測不到摺痕時維持原本右緣。
+    /// 1) 半折狀態摺痕(division)在視窗右緣 → 釘左半邊 → 控制條放左緣。
+    /// 2) 系統狀態膠囊(occlusion)在本視窗內 → 這是膠囊那側（右）→ 維持右緣。
+    /// 3) 窄窗（內屏 pane 寬度）且看不到狀態膠囊 → 遠離膠囊的左半邊 → 控制條放左緣。
     static func sideBarOnLeading(in proxy: GeometryProxy) -> Bool {
         guard #available(iOS 27.1, *) else { return false }
         let width = proxy.size.width
         for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
             guard region.frame.width > 0 else { continue }
-            if region.frame.midX > width / 2 { return true }
-            if region.frame.midX < width / 2 { return false }
+            if region.frame.midX > width * 0.6 { return true }
+            if region.frame.midX < width * 0.4 { return false }
         }
-        return false
+        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0, region.frame.height > 0 else { continue }
+            return false
+        }
+        return width >= 430 && width < 550
     }
 }
 
