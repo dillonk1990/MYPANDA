@@ -90,10 +90,10 @@ struct ReadingView: View {
     }
 
     var content: some View {
+        GeometryReader { proxy in
         ZStack {
             backgroundColor.ignoresSafeArea()
 
-            GeometryReader { proxy in
             ZStack {
                 if setting.readingDirection == .vertical {
                     AdvancedList(
@@ -128,9 +128,6 @@ struct ReadingView: View {
             .ignoresSafeArea()
             .id(store.databaseLoadingState)
             .id(store.forceRefreshID)
-            .environment(\.readingContainerWidth, Swift.min(proxy.size.width, proxy.size.height))
-            }
-            .ignoresSafeArea()
 
             ControlPanel(
                 showsPanel: $store.showsPanel,
@@ -148,6 +145,9 @@ struct ReadingView: View {
                 fetchPreviewURLsAction: { store.send(.fetchPreviewURLs($0)) }
             )
         }
+        .environment(\.readingContainerWidth, Swift.min(proxy.size.width, proxy.size.height))
+        }
+        .ignoresSafeArea()
     }
 
     @ViewBuilder

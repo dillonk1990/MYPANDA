@@ -77,7 +77,8 @@ struct ControlPanel<G: Gesture>: View {
                         sliderValue: $sliderValue, previewURLs: previewURLs, range: range,
                         isReversed: setting.readingDirection == .rightToLeft,
                         dismissGesture: dismissGesture, dismissAction: dismissAction,
-                        fetchPreviewURLsAction: fetchPreviewURLsAction
+                        fetchPreviewURLsAction: fetchPreviewURLsAction,
+                        dismissButtonHidden: Self.usesSideControlBar
                     )
                     .animation(.default, value: showsSliderPreview)
                     .offset(y: showsPanel ? 0 : 50)
@@ -316,28 +317,32 @@ private struct SideControlBar: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Button(action: dismissAction) {
                 Image(systemSymbol: .xmark)
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
+                    .font(.title3)
+                    .frame(width: 46, height: 46)
             }
+            .glassEffect(.regular.interactive(), in: Circle())
 
             Text(title)
-                .font(.callout)
+                .font(.footnote)
                 .fontWeight(.bold)
                 .monospacedDigit()
                 .fixedSize()
-                .padding(.vertical, 2)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .glassEffect(.regular, in: Capsule())
 
             Button {
                 enablesLiveText.toggle()
             } label: {
                 Image(systemSymbol: .viewfinderCircle)
                     .symbolVariant(enablesLiveText ? .fill : .none)
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
+                    .font(.title3)
+                    .frame(width: 46, height: 46)
             }
+            .glassEffect(.regular.interactive(), in: Circle())
 
             if DeviceUtil.isLandscape && setting.readingDirection != .vertical {
                 Menu {
@@ -361,9 +366,10 @@ private struct SideControlBar: View {
                 } label: {
                     Image(systemSymbol: .rectangleSplit2x1)
                         .symbolVariant(setting.enablesDualPageMode ? .fill : .none)
-                        .font(.title2)
-                        .frame(width: 44, height: 44)
+                        .font(.title3)
+                        .frame(width: 46, height: 46)
                 }
+                .glassEffect(.regular.interactive(), in: Circle())
             }
 
             Menu {
@@ -380,10 +386,11 @@ private struct SideControlBar: View {
                 }
             } label: {
                 Image(systemSymbol: .timer)
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
+                    .font(.title3)
+                    .frame(width: 46, height: 46)
             }
             .buttonStyle(.borderless)
+            .glassEffect(.regular.interactive(), in: Circle())
 
             ToolbarFeaturesMenu {
                 Button(action: retryAllFailedImagesAction) {
@@ -400,18 +407,17 @@ private struct SideControlBar: View {
                 }
             }
             .buttonStyle(.borderless)
-            .font(.title2)
-            .frame(width: 44, height: 44)
+            .font(.title3)
+            .frame(width: 46, height: 46)
+            .glassEffect(.regular.interactive(), in: Circle())
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 6)
-        .glassEffect(.regular.interactive())
         .foregroundStyle(.primary)
     }
 }
 
 // MARK: LowerPanel
 private struct LowerPanel<G: Gesture>: View {
+    @Environment(\.readingContainerWidth) private var containerWidth
     @Binding private var showsSliderPreview: Bool
     @Binding private var sliderValue: Float
     private let previewURLs: [Int: URL]
@@ -420,12 +426,14 @@ private struct LowerPanel<G: Gesture>: View {
     private let dismissGesture: G
     private let dismissAction: () -> Void
     private let fetchPreviewURLsAction: (Int) -> Void
+    private let dismissButtonHidden: Bool
 
     init(
         showsSliderPreview: Binding<Bool>, sliderValue: Binding<Float>,
         previewURLs: [Int: URL], range: ClosedRange<Float>, isReversed: Bool,
         dismissGesture: G, dismissAction: @escaping () -> Void,
-        fetchPreviewURLsAction: @escaping (Int) -> Void
+        fetchPreviewURLsAction: @escaping (Int) -> Void,
+        dismissButtonHidden: Bool
     ) {
         _showsSliderPreview = showsSliderPreview
         _sliderValue = sliderValue
@@ -435,19 +443,22 @@ private struct LowerPanel<G: Gesture>: View {
         self.dismissGesture = dismissGesture
         self.dismissAction = dismissAction
         self.fetchPreviewURLsAction = fetchPreviewURLsAction
+        self.dismissButtonHidden = dismissButtonHidden
     }
 
     var body: some View {
-        VStack(spacing: 30) {
-            Button(action: dismissAction) {
-                Image(systemSymbol: .xmark)
-                    .foregroundColor(.primary)
-                    .font(.title2)
-                    .frame(width: 44, height: 44)
+        VStack(spacing: dismissButtonHidden ? 0 : 30) {
+            if !dismissButtonHidden {
+                Button(action: dismissAction) {
+                    Image(systemSymbol: .xmark)
+                        .foregroundColor(.primary)
+                        .font(.title2)
+                        .frame(width: 44, height: 44)
+                }
+                .glassEffect(.regular.interactive())
+                .gesture(dismissGesture)
+                .opacity(showsSliderPreview ? 0 : 1)
             }
-            .glassEffect(.regular.interactive())
-            .gesture(dismissGesture)
-            .opacity(showsSliderPreview ? 0 : 1)
 
             VStack(spacing: 0) {
                 SliderPreivew(
@@ -470,7 +481,7 @@ private struct LowerPanel<G: Gesture>: View {
                         in: range,
                         onEditingChanged: { if !$0 { showsSliderPreview = false } }
                     )
-                    .frame(width: DeviceUtil.windowW * 0.6)
+                    .frame(width: (containerWidth > 0 ? containerWidth : DeviceUtil.windowW) * 0.6)
                     .rotationEffect(.init(degrees: isReversed ? 180 : 0))
                     .simultaneousGesture(
                         LongPressGesture(minimumDuration: .infinity, maximumDistance: .infinity)
@@ -491,6 +502,7 @@ private struct LowerPanel<G: Gesture>: View {
 
 // MARK: SliderPreview
 private struct SliderPreivew: View {
+    @Environment(\.readingContainerWidth) private var containerWidth
     @Binding private var showsSliderPreview: Bool
     @Binding var sliderValue: Float
     private let previewURLs: [Int: URL]
@@ -574,7 +586,8 @@ private extension SliderPreivew {
         guard previewsCount > 0 else { return 0 }
         let count = CGFloat(previewsCount)
         let spacing = (count + 1) * previewSpacing + horizontalPadding * 2 + Self.outerPadding * 2
-        return (DeviceUtil.windowW - spacing) / count
+        let base = containerWidth > 0 ? containerWidth : DeviceUtil.windowW
+        return (base - spacing) / count
     }
     func checkIndex(_ index: Int) -> Bool {
         index >= Int(range.lowerBound) && index <= Int(range.upperBound)
