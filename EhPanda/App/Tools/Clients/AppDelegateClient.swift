@@ -8,7 +8,8 @@ import ComposableArchitecture
 
 struct AppDelegateClient {
     let setOrientation: @MainActor (UIInterfaceOrientationMask) -> Void
-    let setOrientationMask: (UIInterfaceOrientationMask) -> Void
+    /// nil = 清除覆蓋、跟隨即時寬度預設
+    let setOrientationMask: (UIInterfaceOrientationMask?) -> Void
 }
 
 extension AppDelegateClient {
@@ -17,19 +18,26 @@ extension AppDelegateClient {
             DeviceUtil.keyWindow?.windowScene?.requestGeometryUpdate(.iOS(interfaceOrientations: mask))
         },
         setOrientationMask: { mask in
-            AppDelegate.orientationMask = mask
+            AppDelegate.orientationMaskOverride = mask
         }
     )
 
     @MainActor
     func setPortraitOrientation() {
+        // 寬視窗（摺疊內屏、iPad）不強制轉直向，避免產生黑邊
+        guard !DeviceUtil.isWideWidth else { return }
         setOrientation(.portrait)
     }
     func setAllOrientationMask() {
         setOrientationMask([.all])
     }
     func setPortraitOrientationMask() {
-        setOrientationMask([.portrait, .portraitUpsideDown])
+        // 寬視窗改用即時預設（允許全方向）；窄視窗維持鎖直向
+        if DeviceUtil.isWideWidth {
+            setOrientationMask(nil)
+        } else {
+            setOrientationMask([.portrait, .portraitUpsideDown])
+        }
     }
 }
 

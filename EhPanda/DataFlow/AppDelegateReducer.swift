@@ -57,7 +57,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AppReducer()
     }
 
-    static var orientationMask: UIInterfaceOrientationMask = DeviceUtil.isPad ? .all : [.portrait, .portraitUpsideDown]
+    /// 由閱讀/設定頁面明確指定的方向覆蓋值；nil 表示跟隨即時寬度預設
+    static var orientationMaskOverride: UIInterfaceOrientationMask?
+
+    /// 即時預設：寬視窗（iPad、摺疊內屏）允許全部方向，窄視窗（外屏、一般手機）鎖直向
+    static var defaultOrientationMask: UIInterfaceOrientationMask {
+        DeviceUtil.isWideWidth ? .all : [.portrait, .portraitUpsideDown]
+    }
+
+    static var orientationMask: UIInterfaceOrientationMask {
+        orientationMaskOverride ?? defaultOrientationMask
+    }
 
     func application(
         _ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?
