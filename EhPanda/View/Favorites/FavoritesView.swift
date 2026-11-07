@@ -99,6 +99,7 @@ struct FavoritesView: View {
                 content
             }
         }
+        .duoTabBarKeeper()
     }
 
     @ViewBuilder private var navigationLink: some View {

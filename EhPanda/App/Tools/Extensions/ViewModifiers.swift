@@ -183,3 +183,31 @@ struct PreviewResolver {
         return (plainURL, RoundedOffsetModifier(size: size, offset: offset))
     }
 }
+
+// Duo (iOS 27.1+)：系統把主選單轉成側邊圓形按鈕直欄。
+// 系統搜尋介面收合後偶爾忘記把該直欄放回（只有重開 App 才恢復）。
+// 保險：每次進入各主分頁，顯式通知系統保持 tab bar 可見。
+struct DuoTabBarKeeperModifier: ViewModifier {
+    @State private var forceVisible = false
+
+    func body(content: Content) -> some View {
+        content
+            .toolbar(
+                forceVisible ? ToolbarBarVisibility.visible : ToolbarBarVisibility.automatic,
+                for: .tabBar
+            )
+            .onAppear {
+                guard #available(iOS 27.1, *), DeviceUtil.isPhone else { return }
+                forceVisible = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    forceVisible = true
+                }
+            }
+    }
+}
+
+extension View {
+    func duoTabBarKeeper() -> some View {
+        modifier(DuoTabBarKeeperModifier())
+    }
+}

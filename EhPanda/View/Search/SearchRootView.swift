@@ -101,6 +101,7 @@ struct SearchRootView: View {
                 }
             }
         }
+        .duoTabBarKeeper()
     }
 
     private func toolbar() -> some ToolbarContent {

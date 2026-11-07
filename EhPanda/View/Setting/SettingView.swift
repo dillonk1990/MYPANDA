@@ -32,6 +32,7 @@ struct SettingView: View {
             .background(navigationLinks)
             .navigationTitle(L10n.Localizable.SettingView.Title.setting)
         }
+        .duoTabBarKeeper()
     }
 }
 

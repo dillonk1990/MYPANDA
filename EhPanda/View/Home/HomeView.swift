@@ -112,6 +112,7 @@ struct HomeView: View {
                 content
             }
         }
+        .duoTabBarKeeper()
     }
 
     private func toolbar() -> some ToolbarContent {
