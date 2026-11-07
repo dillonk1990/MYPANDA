@@ -193,7 +193,7 @@ struct DuoTabBarKeeperModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .toolbar(
-                forceVisible ? ToolbarBarVisibility.visible : ToolbarBarVisibility.automatic,
+                forceVisible ? .visible : .automatic,
                 for: .tabBar
             )
             .onAppear {
