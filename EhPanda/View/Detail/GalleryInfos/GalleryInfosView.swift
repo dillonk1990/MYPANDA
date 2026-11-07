@@ -92,14 +92,13 @@ struct GalleryInfosView: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let contentW = min(proxy.size.width, 700)
             List(infos) { info in
                 HStack {
                     HStack {
                         Text(info.title)
                         Spacer()
                     }
-                    .frame(width: contentW / 3)
+                    .frame(width: proxy.size.width / 3)
                     Spacer()
                     Button {
                         if let text = info.value {
@@ -112,8 +111,6 @@ struct GalleryInfosView: View {
                     }
                 }
             }
-            .frame(width: contentW)
-            .frame(maxWidth: .infinity)
         }
         .progressHUD(
             config: store.hudConfig,

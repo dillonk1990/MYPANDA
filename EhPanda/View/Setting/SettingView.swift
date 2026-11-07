@@ -28,8 +28,6 @@ struct SettingView: View {
                     }
                 }
                 .padding(.vertical, 40).padding(.horizontal)
-                .frame(maxWidth: 700)
-                .frame(maxWidth: .infinity)
             }
             .background(navigationLinks)
             .navigationTitle(L10n.Localizable.SettingView.Title.setting)
