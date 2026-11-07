@@ -27,27 +27,6 @@ import ComposableArchitecture
                 .animation(.linear(duration: 0.5), value: databaseState)
             }
             .navigationViewStyle(.stack)
-            .overlay(alignment: .topTrailing) { DuoDebugBadge() }
-        }
-    }
-}
-
-// MARK: - Duo 診斷徽章（暫時功能，確認橫向問題後會移除）
-private struct DuoDebugBadge: View {
-    var body: some View {
-        TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("win \(Int(DeviceUtil.absWindowW))x\(Int(DeviceUtil.absWindowH))")
-                Text("scr \(Int(DeviceUtil.absScreenW))x\(Int(DeviceUtil.absScreenH))")
-                Text("scale \(Int(DeviceUtil.keyWindow?.windowScene?.screen.scale ?? 0)) hsc \(DeviceUtil.isInRegularWidth ? "R" : "C")")
-                Text("mask \(AppDelegate.orientationMask.rawValue)")
-            }
-            .font(.system(size: 10, design: .monospaced))
-            .foregroundStyle(.green)
-            .padding(6)
-            .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 6))
-            .padding(4)
-            .allowsHitTesting(false)
         }
     }
 }
