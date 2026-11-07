@@ -357,11 +357,13 @@ private struct SliderPreivew: View {
 
 private extension SliderPreivew {
     var verticalPadding: CGFloat {
-        DeviceUtil.isPadWidth ? 30 : 20
+        DeviceUtil.isPadWidth || DeviceUtil.isWideWidth ? 30 : 20
     }
     var horizontalPadding: CGFloat { verticalPadding * 0.5 }
     var previewsCount: Int {
-        DeviceUtil.isPadWidth ? DeviceUtil.isLandscape ? 7 : 5 : 3
+        // 寬容器（iPad 或摺疊內屏）有空間顯示更多預覽縮圖
+        DeviceUtil.isPadWidth || DeviceUtil.isWideWidth
+          ? DeviceUtil.isLandscape ? 7 : 5 : 3
     }
     var previewsIndices: [Int] {
         guard !previewURLs.isEmpty else { return [] }
