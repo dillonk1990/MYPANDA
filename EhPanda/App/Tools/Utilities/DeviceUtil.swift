@@ -23,6 +23,11 @@ struct DeviceUtil {
         keyWindow?.frame.size.width ?? absScreenW
     }
 
+    // 視窗目前的實際高度
+    static var presentWindowH: CGFloat {
+        keyWindow?.frame.size.height ?? absScreenH
+    }
+
     // 寬度足以並排兩頁：涵蓋 iPad 與摺疊裝置（如 iPhone Duo）展開狀態
     static var isWideWidth: Bool {
         isPadWidth || presentWindowW >= 550
@@ -50,13 +55,13 @@ struct DeviceUtil {
     }
 
     static var isLandscape: Bool {
-        [.landscapeLeft, .landscapeRight]
-            .contains(keyWindow?.windowScene?.effectiveGeometry.interfaceOrientation)
+        // iPhone Duo 上 Apple 明確建議：不要靠 interfaceOrientation 判斷方向，
+        // 直接比較視窗幾何的寬高
+        presentWindowW > presentWindowH
     }
 
     static var isPortrait: Bool {
-        [.portrait, .portraitUpsideDown]
-            .contains(keyWindow?.windowScene?.effectiveGeometry.interfaceOrientation)
+        presentWindowW <= presentWindowH
     }
 
     static var windowW: CGFloat {
