@@ -87,22 +87,25 @@ struct ControlPanel<G: Gesture>: View {
             }
 
             if Self.usesSideControlBar {
-                SideControlBar(
-                    title: title,
-                    setting: $setting,
-                    enablesLiveText: $enablesLiveText,
-                    autoPlayPolicy: $autoPlayPolicy,
-                    dismissAction: dismissAction,
-                    navigateSettingAction: navigateSettingAction,
-                    reloadAllImagesAction: reloadAllImagesAction,
-                    retryAllFailedImagesAction: retryAllFailedImagesAction
-                )
-                .frame(
-                    maxWidth: .infinity, maxHeight: .infinity,
-                    alignment: DeviceUtil.snapsToLeadingEdge ? .leading : .trailing
-                )
-                .padding(DeviceUtil.snapsToLeadingEdge ? .leading : .trailing, 10)
-                .offset(y: showsPanel ? 0 : -40)
+                GeometryReader { geo in
+                    let onLeading = Self.sideBarOnLeading(in: geo)
+                    SideControlBar(
+                        title: title,
+                        setting: $setting,
+                        enablesLiveText: $enablesLiveText,
+                        autoPlayPolicy: $autoPlayPolicy,
+                        dismissAction: dismissAction,
+                        navigateSettingAction: navigateSettingAction,
+                        reloadAllImagesAction: reloadAllImagesAction,
+                        retryAllFailedImagesAction: retryAllFailedImagesAction
+                    )
+                    .frame(
+                        maxWidth: .infinity, maxHeight: .infinity,
+                        alignment: onLeading ? .leading : .trailing
+                    )
+                    .padding(onLeading ? .leading : .trailing, 10)
+                    .offset(y: showsPanel ? 0 : -40)
+                }
             }
         }
         .opacity(showsPanel ? 1 : 0).disabled(!showsPanel)
@@ -277,6 +280,20 @@ private struct UpperPanel: View {
             needed = max(needed, width - region.frame.minX - 20 + 8)
         }
         return Swift.max(0, needed)
+    }
+
+    /// Duo 半屏釘選模式：控制條放「背對摺痕」的那一側（螢幕外緣、拇指好夠）。
+    /// 視窗釘在左半邊時，摺痕會落在視窗右緣 → 控制條改放左緣；
+    /// 偵測不到摺痕時維持原本右緣。
+    private static func sideBarOnLeading(in proxy: GeometryProxy) -> Bool {
+        guard #available(iOS 27.1, *) else { return false }
+        let width = proxy.size.width
+        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0 else { continue }
+            if region.frame.midX > width / 2 { return true }
+            if region.frame.midX < width / 2 { return false }
+        }
+        return false
     }
 }
 
