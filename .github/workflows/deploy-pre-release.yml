@@ -45,10 +45,13 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
       - name: Run tests
-        run: xcodebuild clean test
-          -skipMacroValidation
-          -scheme ${{ env.SCHEME_NAME }}
-          -destination 'platform=iOS Simulator,name=iPhone Air'
+        run: |
+          set -o pipefail
+          xcodebuild clean test -skipMacroValidation -scheme ${{ env.SCHEME_NAME }} -destination 'platform=iOS Simulator,name=iPhone Air' 2>&1 | tee /tmp/test.log
+      - name: Show test errors
+        if: failure()
+        run: |
+          grep -E "error:|Testing failed|TEST FAILED|Unable to find" /tmp/test.log | head -n 60 || echo "no obvious error lines"
       - name: Bump version
         id: bump-version
         uses: yanamura/ios-bump-version@v1
