@@ -28,9 +28,15 @@ struct DeviceUtil {
         keyWindow?.frame.size.height ?? absScreenH
     }
 
-    // 寬度足以並排兩頁：涵蓋 iPad 與摺疊裝置（如 iPhone Duo）展開狀態
+    // size class 判斷：iPhone Duo 內屏（含半摺）為 regular，外屏為 compact。
+    // 內屏 pt 尺寸與外屏幾乎相同（4x 縮放），不能用 pt 寬度辨識
+    static var isInRegularWidth: Bool {
+        keyWindow?.traitCollection.horizontalSizeClass == .regular
+    }
+
+    // 寬版模式：iPad、或 size class 為 regular 的寬容器（摺疊內屏）
     static var isWideWidth: Bool {
-        isPadWidth || presentWindowW >= 550
+        isInRegularWidth || presentWindowW >= 550
     }
 
     // 雙頁模式觸發條件：橫向 或 寬度足夠（摺疊內屏直向也夠寬）

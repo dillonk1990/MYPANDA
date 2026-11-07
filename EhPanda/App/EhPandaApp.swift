@@ -39,9 +39,10 @@ private struct DuoDebugBadge: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text("win \(Int(DeviceUtil.absWindowW))x\(Int(DeviceUtil.absWindowH))")
                 Text("scr \(Int(DeviceUtil.absScreenW))x\(Int(DeviceUtil.absScreenH))")
+                Text("scale \(Int(DeviceUtil.keyWindow?.windowScene?.screen.scale ?? 0)) hsc \(DeviceUtil.isInRegularWidth ? "R" : "C")")
                 Text("mask \(AppDelegate.orientationMask.rawValue)")
             }
-            .font(.system(size: 11, design: .monospaced))
+            .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.green)
             .padding(6)
             .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 6))
