@@ -207,7 +207,7 @@ struct ReadingView: View {
 
     @ViewBuilder private func imageStack(index: Int) -> some View {
         let imageStackConfig = store.state.imageContainerConfigs(index: index, setting: setting)
-        let isDualPage = setting.enablesDualPageMode && setting.readingDirection != .vertical && DeviceUtil.isLandscape
+        let isDualPage = setting.enablesDualPageMode && setting.readingDirection != .vertical && DeviceUtil.dualPageCapable
         HorizontalImageStack(
             index: index,
             isDualPage: isDualPage,

@@ -137,10 +137,19 @@ private struct WaterfallList: View {
     private let translateAction: ((String) -> (String, TagTranslation?))?
 
     private var columnsInPortrait: Int {
-        DeviceUtil.isPadWidth ? 4 : 2
+        if DeviceUtil.isPadWidth { return 4 }
+        // 摺疊裝置展開（如 iPhone Duo 內屏）：依實際寬度動態決定欄數
+        if DeviceUtil.isWideWidth {
+            return min(6, max(3, Int(DeviceUtil.presentWindowW / 160)))
+        }
+        return 2
     }
     private var columnsInLandscape: Int {
-        DeviceUtil.isPadWidth ? 5 : 2
+        if DeviceUtil.isPadWidth { return 5 }
+        if DeviceUtil.isWideWidth {
+            return min(8, max(3, Int(DeviceUtil.presentWindowW / 160)))
+        }
+        return 2
     }
 
     private var shouldShowFooter: Bool {

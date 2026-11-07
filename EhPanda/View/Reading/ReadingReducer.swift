@@ -92,9 +92,9 @@ struct ReadingReducer {
         }
 
         // Image
-        func containerDataSource(setting: Setting, isLandscape: Bool = DeviceUtil.isLandscape) -> [Int] {
+        func containerDataSource(setting: Setting, isDualCapable: Bool = DeviceUtil.dualPageCapable) -> [Int] {
             let defaultData = Array(1...gallery.pageCount)
-            guard isLandscape && setting.enablesDualPageMode
+            guard isDualCapable && setting.enablesDualPageMode
                     && setting.readingDirection != .vertical
             else { return defaultData }
 
@@ -105,13 +105,13 @@ struct ReadingReducer {
             return data
         }
         func imageContainerConfigs(
-            index: Int, setting: Setting, isLandscape: Bool = DeviceUtil.isLandscape
+            index: Int, setting: Setting, isDualCapable: Bool = DeviceUtil.dualPageCapable
         ) -> ImageStackConfig {
             let direction = setting.readingDirection
             let isReversed = direction == .rightToLeft
             let isFirstSingle = setting.exceptCover
             let isFirstPageAndSingle = index == 1 && isFirstSingle
-            let isDualPage = isLandscape && setting.enablesDualPageMode && direction != .vertical
+            let isDualPage = isDualCapable && setting.enablesDualPageMode && direction != .vertical
             let firstIndex = isDualPage && isReversed && !isFirstPageAndSingle ? index + 1 : index
             let secondIndex = firstIndex + (isReversed ? -1 : 1)
             let isValidFirstRange = firstIndex >= 1 && firstIndex <= gallery.pageCount

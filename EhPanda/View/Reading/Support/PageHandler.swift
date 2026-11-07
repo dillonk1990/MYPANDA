@@ -12,8 +12,8 @@ final class PageHandler: ObservableObject {
         }
     }
 
-    func mapFromPager(index: Int, pageCount: Int, setting: Setting, isLandscape: Bool = DeviceUtil.isLandscape) -> Int {
-        guard isLandscape && setting.enablesDualPageMode
+    func mapFromPager(index: Int, pageCount: Int, setting: Setting, isDualCapable: Bool = DeviceUtil.dualPageCapable) -> Int {
+        guard isDualCapable && setting.enablesDualPageMode
                 && setting.readingDirection != .vertical
         else { return index + 1 }
         guard index > 0 else { return 1 }
@@ -27,8 +27,8 @@ final class PageHandler: ObservableObject {
         }
     }
 
-    func mapToPager(index: Int, setting: Setting, isLandscape: Bool = DeviceUtil.isLandscape) -> Int {
-        guard isLandscape && setting.enablesDualPageMode
+    func mapToPager(index: Int, setting: Setting, isDualCapable: Bool = DeviceUtil.dualPageCapable) -> Int {
+        guard isDualCapable && setting.enablesDualPageMode
                 && setting.readingDirection != .vertical
         else { return index - 1 }
         guard index > 1 else { return 0 }

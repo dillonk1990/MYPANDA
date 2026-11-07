@@ -18,6 +18,21 @@ struct DeviceUtil {
         windowW >= 744
     }
 
+    // 視窗目前的實際寬度（會隨轉向、摺疊開合變化）
+    static var presentWindowW: CGFloat {
+        keyWindow?.frame.size.width ?? absScreenW
+    }
+
+    // 寬度足以並排兩頁：涵蓋 iPad 與摺疊裝置（如 iPhone Duo）展開狀態
+    static var isWideWidth: Bool {
+        isPadWidth || presentWindowW >= 550
+    }
+
+    // 雙頁模式觸發條件：橫向 或 寬度足夠（摺疊內屏直向也夠寬）
+    static var dualPageCapable: Bool {
+        isLandscape || isWideWidth
+    }
+
     static var isSEWidth: Bool {
         windowW <= 320
     }
