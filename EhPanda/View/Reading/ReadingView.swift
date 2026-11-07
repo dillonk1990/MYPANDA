@@ -128,9 +128,9 @@ struct ReadingView: View {
             .ignoresSafeArea()
             .id(store.databaseLoadingState)
             .id(store.forceRefreshID)
+            .environment(\.readingContainerWidth, Swift.min(proxy.size.width, proxy.size.height))
             }
             .ignoresSafeArea()
-            .environment(\.readingContainerWidth, Swift.min(proxy.size.width, proxy.size.height))
 
             ControlPanel(
                 showsPanel: $store.showsPanel,

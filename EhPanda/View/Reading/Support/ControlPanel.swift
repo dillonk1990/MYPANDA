@@ -108,7 +108,7 @@ struct ControlPanel<G: Gesture>: View {
     /// per Apple's "Designing for iPhone Duo" guidance.
     static var usesSideControlBar: Bool {
         if #available(iOS 27.1, *) {
-            return UIDevice.current.userInterfaceIdiom == .phone
+            return DeviceUtil.isPhone
         }
         return false
     }
