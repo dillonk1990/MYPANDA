@@ -96,6 +96,8 @@ private struct UpperPanel: View {
     private let reloadAllImagesAction: () -> Void
     private let retryAllFailedImagesAction: () -> Void
 
+    @State private var duoReservedTrailing: CGFloat = 0
+
     init(
         title: String,
         setting: Binding<Setting>,
@@ -214,6 +216,40 @@ private struct UpperPanel: View {
         }
         .foregroundStyle(.primary)
         .padding(.horizontal, 20)
+        .padding(.trailing, duoReservedTrailing)
+        .background(alignment: .topLeading) {
+            GeometryReader { proxy in
+                Color.clear
+                    .preference(
+                        key: DuoReservedTrailingKey.self,
+                        value: Self.duoReservedTrailing(in: proxy)
+                    )
+            }
+        }
+        .onPreferenceChange(DuoReservedTrailingKey.self) { duoReservedTrailing = $0 }
+    }
+
+    /// Extra trailing inset so the right-side toolbar icons stay clear of system
+    /// reserved regions (iPhone Duo vertical status cluster / front camera).
+    /// Uses the iOS 27.1 ReservedRegion API; returns 0 on older systems.
+    private static func duoReservedTrailing(in proxy: GeometryProxy) -> CGFloat {
+        guard #available(iOS 27.1, *) else { return 0 }
+        let width = proxy.size.width
+        var needed: CGFloat = 0
+        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+            guard region.frame.midX > width / 2, region.frame.width > 0 else { continue }
+            // Subtract the 20pt base padding already applied, keep an 8pt visual gap.
+            needed = max(needed, width - region.frame.minX - 20 + 8)
+        }
+        return Swift.max(0, needed)
+    }
+}
+
+// MARK: DuoReservedTrailingKey
+private struct DuoReservedTrailingKey: PreferenceKey {
+    static var defaultValue: CGFloat { 0 }
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = Swift.max(value, nextValue())
     }
 }
 
