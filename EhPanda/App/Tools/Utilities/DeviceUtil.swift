@@ -54,6 +54,19 @@ struct DeviceUtil {
             .compactMap({ $0 as? UIWindowScene }).last?
             .windows.filter({ $0.isKeyWindow }).last
     }
+
+    // Duo 雙開/釘選模式：視窗被釘在螢幕左半邊時回 true（控制條要換到左緣）
+    static var snapsToLeadingEdge: Bool {
+        guard let scene = keyWindow?.windowScene else { return false }
+        if #available(iOS 17.0, *) {
+            let pane = scene.effectiveGeometry.displayBounds
+            let display = scene.effectiveGeometry.device.screen.bounds
+            let full = max(display.width, display.height)
+            let isHalfPane = pane.width < full * 0.8
+            return isHalfPane && pane.origin.x < full * 0.25
+        }
+        return false
+    }
     static var anyWindow: UIWindow? {
         UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene }).last?

@@ -80,6 +80,7 @@ struct ControlPanel<G: Gesture>: View {
                         fetchPreviewURLsAction: fetchPreviewURLsAction,
                         dismissButtonHidden: Self.usesSideControlBar
                     )
+                    .padding(.bottom, 24)
                     .animation(.default, value: showsSliderPreview)
                     .offset(y: showsPanel ? 0 : 50)
                 }
@@ -96,8 +97,11 @@ struct ControlPanel<G: Gesture>: View {
                     reloadAllImagesAction: reloadAllImagesAction,
                     retryAllFailedImagesAction: retryAllFailedImagesAction
                 )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                .padding(.trailing, 10)
+                .frame(
+                    maxWidth: .infinity, maxHeight: .infinity,
+                    alignment: DeviceUtil.snapsToLeadingEdge ? .leading : .trailing
+                )
+                .padding(DeviceUtil.snapsToLeadingEdge ? .leading : .trailing, 10)
                 .offset(y: showsPanel ? 0 : -40)
             }
         }
