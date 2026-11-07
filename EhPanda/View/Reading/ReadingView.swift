@@ -93,6 +93,7 @@ struct ReadingView: View {
         ZStack {
             backgroundColor.ignoresSafeArea()
 
+            GeometryReader { proxy in
             ZStack {
                 if setting.readingDirection == .vertical {
                     AdvancedList(
@@ -127,6 +128,9 @@ struct ReadingView: View {
             .ignoresSafeArea()
             .id(store.databaseLoadingState)
             .id(store.forceRefreshID)
+            }
+            .ignoresSafeArea()
+            .environment(\.readingContainerWidth, Swift.min(proxy.size.width, proxy.size.height))
 
             ControlPanel(
                 showsPanel: $store.showsPanel,
@@ -469,10 +473,26 @@ private struct HorizontalImageStack: View {
     }
 }
 
+// MARK: ReadingContainerWidth
+private struct ReadingContainerWidthKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var readingContainerWidth: CGFloat {
+        get { self[ReadingContainerWidthKey.self] }
+        set { self[ReadingContainerWidthKey.self] = newValue }
+    }
+}
+
 // MARK: ImageContainer
 private struct ImageContainer: View {
+    /// Actual reading container width (full screen, split pane, or windowed scene).
+    @Environment(\.readingContainerWidth) private var containerWidth
+
     private var width: CGFloat {
-        DeviceUtil.windowW / (isDualPage ? 2 : 1)
+        let base = containerWidth > 0 ? containerWidth : DeviceUtil.windowW
+        return base / (isDualPage ? 2 : 1)
     }
     private var height: CGFloat {
         width / Defaults.ImageSize.contentAspect
