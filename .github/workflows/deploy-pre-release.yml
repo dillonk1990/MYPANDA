@@ -44,6 +44,14 @@ jobs:
           command: xcodebuild -downloadPlatform iOS
       - name: Show Xcode version
         run: xcodebuild -version
+      - name: Resolve packages
+        run: |
+          set -o pipefail
+          xcodebuild -resolvePackageDependencies -skipMacroValidation -scheme ${{ env.SCHEME_NAME }} 2>&1 | tee /tmp/resolve.log
+      - name: Show resolve errors
+        if: failure()
+        run: |
+          grep -iE -A10 "error|could not|because|unavailable|conflict" /tmp/resolve.log | head -n 120 || tail -n 40 /tmp/resolve.log
       - name: Run tests
         run: |
           set -o pipefail
@@ -51,7 +59,7 @@ jobs:
       - name: Show test errors
         if: failure()
         run: |
-          grep -E "error:|Testing failed|TEST FAILED|Unable to find" /tmp/test.log | head -n 60 || echo "no obvious error lines"
+          grep -B2 -A25 -E "error:|Could not resolve|Testing failed|Unable to find" /tmp/test.log | head -n 150 || echo "no obvious error lines"
       - name: Bump version
         id: bump-version
         uses: yanamura/ios-bump-version@v1
