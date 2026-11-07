@@ -55,32 +55,62 @@ struct ControlPanel<G: Gesture>: View {
     }
 
     var body: some View {
-        VStack {
-            UpperPanel(
-                title: title,
-                setting: $setting,
-                enablesLiveText: $enablesLiveText,
-                autoPlayPolicy: $autoPlayPolicy,
-                dismissAction: dismissAction,
-                navigateSettingAction: navigateSettingAction,
-                reloadAllImagesAction: reloadAllImagesAction,
-                retryAllFailedImagesAction: retryAllFailedImagesAction
-            )
-            .offset(y: showsPanel ? 0 : -50)
-            Spacer()
-            if range.upperBound > range.lowerBound {
-                LowerPanel(
-                    showsSliderPreview: $showsSliderPreview,
-                    sliderValue: $sliderValue, previewURLs: previewURLs, range: range,
-                    isReversed: setting.readingDirection == .rightToLeft,
-                    dismissGesture: dismissGesture, dismissAction: dismissAction,
-                    fetchPreviewURLsAction: fetchPreviewURLsAction
+        ZStack {
+            VStack {
+                if !Self.usesSideControlBar {
+                    UpperPanel(
+                        title: title,
+                        setting: $setting,
+                        enablesLiveText: $enablesLiveText,
+                        autoPlayPolicy: $autoPlayPolicy,
+                        dismissAction: dismissAction,
+                        navigateSettingAction: navigateSettingAction,
+                        reloadAllImagesAction: reloadAllImagesAction,
+                        retryAllFailedImagesAction: retryAllFailedImagesAction
+                    )
+                    .offset(y: showsPanel ? 0 : -50)
+                }
+                Spacer()
+                if range.upperBound > range.lowerBound {
+                    LowerPanel(
+                        showsSliderPreview: $showsSliderPreview,
+                        sliderValue: $sliderValue, previewURLs: previewURLs, range: range,
+                        isReversed: setting.readingDirection == .rightToLeft,
+                        dismissGesture: dismissGesture, dismissAction: dismissAction,
+                        fetchPreviewURLsAction: fetchPreviewURLsAction
+                    )
+                    .animation(.default, value: showsSliderPreview)
+                    .offset(y: showsPanel ? 0 : 50)
+                }
+            }
+
+            if Self.usesSideControlBar {
+                SideControlBar(
+                    title: title,
+                    setting: $setting,
+                    enablesLiveText: $enablesLiveText,
+                    autoPlayPolicy: $autoPlayPolicy,
+                    dismissAction: dismissAction,
+                    navigateSettingAction: navigateSettingAction,
+                    reloadAllImagesAction: reloadAllImagesAction,
+                    retryAllFailedImagesAction: retryAllFailedImagesAction
                 )
-                .animation(.default, value: showsSliderPreview)
-                .offset(y: showsPanel ? 0 : 50)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                .padding(.trailing, 10)
+                .offset(y: showsPanel ? 0 : -40)
             }
         }
         .opacity(showsPanel ? 1 : 0).disabled(!showsPanel)
+    }
+
+    /// On iPhone with iOS 27.1+ (iPhone Duo style system UI with vertical side
+    /// controls), place the reading toolbar vertically along the trailing edge,
+    /// per Apple's "Designing for iPhone Duo" guidance.
+    static var usesSideControlBar: Bool {
+        if #available(iOS 27.1, *) {
+            return UIDevice.current.userInterfaceIdiom == .phone
+        }
+        return false
     }
 }
 
@@ -250,6 +280,133 @@ private struct DuoReservedTrailingKey: PreferenceKey {
     static var defaultValue: CGFloat { 0 }
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = Swift.max(value, nextValue())
+    }
+}
+
+// MARK: SideControlBar
+private struct SideControlBar: View {
+    @Binding private var setting: Setting
+    @Binding private var enablesLiveText: Bool
+    @Binding private var autoPlayPolicy: AutoPlayPolicy
+
+    private let title: String
+    private let dismissAction: () -> Void
+    private let navigateSettingAction: () -> Void
+    private let reloadAllImagesAction: () -> Void
+    private let retryAllFailedImagesAction: () -> Void
+
+    init(
+        title: String,
+        setting: Binding<Setting>,
+        enablesLiveText: Binding<Bool>,
+        autoPlayPolicy: Binding<AutoPlayPolicy>,
+        dismissAction: @escaping () -> Void,
+        navigateSettingAction: @escaping () -> Void,
+        reloadAllImagesAction: @escaping () -> Void,
+        retryAllFailedImagesAction: @escaping () -> Void
+    ) {
+        self.title = title
+        _setting = setting
+        _enablesLiveText = enablesLiveText
+        _autoPlayPolicy = autoPlayPolicy
+        self.dismissAction = dismissAction
+        self.navigateSettingAction = navigateSettingAction
+        self.reloadAllImagesAction = reloadAllImagesAction
+        self.retryAllFailedImagesAction = retryAllFailedImagesAction
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Button(action: dismissAction) {
+                Image(systemSymbol: .xmark)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+            }
+
+            Text(title)
+                .font(.callout)
+                .fontWeight(.bold)
+                .monospacedDigit()
+                .fixedSize()
+                .padding(.vertical, 2)
+
+            Button {
+                enablesLiveText.toggle()
+            } label: {
+                Image(systemSymbol: .viewfinderCircle)
+                    .symbolVariant(enablesLiveText ? .fill : .none)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+            }
+
+            if DeviceUtil.isLandscape && setting.readingDirection != .vertical {
+                Menu {
+                    Button {
+                        setting.enablesDualPageMode.toggle()
+                    } label: {
+                        Text(L10n.Localizable.ReadingView.ToolbarItem.Title.dualPageMode)
+                        if setting.enablesDualPageMode {
+                            Image(systemSymbol: .checkmark)
+                        }
+                    }
+                    Button {
+                        setting.exceptCover.toggle()
+                    } label: {
+                        Text(L10n.Localizable.ReadingView.ToolbarItem.Title.exceptTheCover)
+                        if setting.exceptCover {
+                            Image(systemSymbol: .checkmark)
+                        }
+                    }
+                    .disabled(!setting.enablesDualPageMode)
+                } label: {
+                    Image(systemSymbol: .rectangleSplit2x1)
+                        .symbolVariant(setting.enablesDualPageMode ? .fill : .none)
+                        .font(.title2)
+                        .frame(width: 44, height: 44)
+                }
+            }
+
+            Menu {
+                Text(L10n.Localizable.ReadingView.ToolbarItem.Title.autoPlay).foregroundColor(.secondary)
+                ForEach(AutoPlayPolicy.allCases) { policy in
+                    Button {
+                        autoPlayPolicy = policy
+                    } label: {
+                        Text(policy.value)
+                        if autoPlayPolicy == policy {
+                            Image(systemSymbol: .checkmark)
+                        }
+                    }
+                }
+            } label: {
+                Image(systemSymbol: .timer)
+                    .font(.title2)
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.borderless)
+
+            ToolbarFeaturesMenu {
+                Button(action: retryAllFailedImagesAction) {
+                    Image(systemSymbol: .exclamationmarkArrowTriangle2Circlepath)
+                    Text(L10n.Localizable.ReadingView.ToolbarItem.Button.retryAllFailedImages)
+                }
+                Button(action: reloadAllImagesAction) {
+                    Image(systemSymbol: .arrowCounterclockwise)
+                    Text(L10n.Localizable.ReadingView.ToolbarItem.Button.reloadAllImages)
+                }
+                Button(action: navigateSettingAction) {
+                    Image(systemSymbol: .gear)
+                    Text(L10n.Localizable.ReadingView.ToolbarItem.Button.readingSetting)
+                }
+            }
+            .buttonStyle(.borderless)
+            .font(.title2)
+            .frame(width: 44, height: 44)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 6)
+        .glassEffect(.regular.interactive())
+        .foregroundStyle(.primary)
     }
 }
 
