@@ -296,9 +296,9 @@ struct DuoTopSpacerModifier: ViewModifier {
         let leftPane = Self.isPinnedLeftPane(in: proxy)
         showSpacer = leftPane
         mirrorHeader = leftPane
-        // 左半邊：抵銷系統替側邊圓鈕列保留的 leading 安全區（合理範圍內才動作）
-        let inset = proxy.safeAreaInsets.leading
-        leadingBleed = (leftPane && inset > 24 && inset < 160) ? -inset : 0
+        // （已關）leadingBleed：IMG_0308/0309 實測左右半邊內容寬度都是 385pt，
+        // 本來就一致、沒有「幽靈留白」；開啟反而會把內容滑進系統圓鈕列底下。
+        leadingBleed = 0
         if #available(iOS 27.1, *) {
             var parts: [String] = []
             for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
@@ -316,23 +316,17 @@ struct DuoTopSpacerModifier: ViewModifier {
         }
     }
 
-    // 三訊號複合判斷：
-    // 1) 摺痕 region 偏右 -> 左 pane；偏左 -> 右 pane
-    // 2) 有作用中的 occlusion（狀態膠囊/時鐘）-> 該 pane 是「有狀態那側」，維持右
-    // 3) 窄窗（snap 寬）且無 occlusion -> 左 pane
+    // 釘選側判斷（IMG_0308/0309 黃字實測 ground truth）：
+    // 釘選時系統總是在其中一側保留 83pt（圓鈕列/狀態群那側）的安全區——
+    //   左半邊：leading 83 / trailing 0（o301,-24 的 occlusion 是幽靈區，不可當訊號）
+    //   右半邊：leading 0 / trailing 83
+    //   全螢幕：兩側都是 0
+    // 舊的「看到 occlusion 就是右半邊」判斷在左半邊會誤判（幽靈遮擋區），故改用安全區方向。
     static func isPinnedLeftPane(in proxy: GeometryProxy) -> Bool {
         guard #available(iOS 27.1, *), DeviceUtil.isPhone else { return false }
-        let width = proxy.size.width
-        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
-            guard region.frame.width > 0 else { continue }
-            if region.frame.midX > width * 0.6 { return true }
-            if region.frame.midX < width * 0.4 { return false }
-        }
-        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
-            guard region.frame.width > 0, region.frame.height > 0 else { continue }
-            return false
-        }
-        return width >= 430 && width < 550
+        let l = proxy.safeAreaInsets.leading
+        let r = proxy.safeAreaInsets.trailing
+        return l > 60 && l > r + 40
     }
 }
 
