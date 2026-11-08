@@ -207,6 +207,9 @@ struct DetailView: View {
             .background(navigationLinks)
             .toolbar(content: toolbar)
             .duoTopSpacer()
+            // Duo：內容右緣停在系統側邊圓鈕列（與時鐘/訊號圈同軸）之前，
+            // 避免右半邊釘選時頁數欄/標籤列被返回・更多圓鈕壓住（IMG_0300）。
+            .duoReservedTrailing()
     }
 }
 
