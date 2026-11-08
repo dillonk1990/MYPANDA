@@ -109,6 +109,17 @@ struct ControlPanel<G: Gesture>: View {
                     .padding(onLeading ? .leading : .trailing, sidePad)
                     .padding(.top, topPad)
                     .offset(y: showsPanel ? 0 : -40)
+
+                    // Duo wip 除錯標籤：截圖可直接讀出系統回報值；正式發布前移除。
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("side=\(onLeading ? "L" : "R") top=\(Int(topPad)) pad=\(Int(sidePad)) w=\(Int(geo.size.width))")
+                        Text(Self.debugRegionSummary(in: geo))
+                    }
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundColor(.yellow)
+                    .padding(6)
+                    .background(Color.black.opacity(0.6))
+                    .offset(x: 8, y: 8)
                 }
             }
         }
@@ -171,25 +182,43 @@ struct ControlPanel<G: Gesture>: View {
     }
 
     /// 側邊控制條的水平內縮：讓按鈕列的中軸對齊同側狀態圖（時鐘/訊號圈）的中心 x，
-    /// 使「✕」正好排在訊號圈正下方同一條直線上；找不到狀態圖時退回 10pt。
+    /// 使「✕」正好排在訊號圈正下方同一條直線上。
+    /// 取「最寬」的同側頂部狀態區（訊號圈寬度大於時鐘文字/投影圖示，最不易被拉偏）。
     static func sideBarSideInset(in proxy: GeometryProxy, onLeading: Bool) -> CGFloat {
+        let width = proxy.size.width
         if #available(iOS 27.1, *) {
             var chosen: CGRect?
             for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
                 let f = region.frame
                 guard f.width > 0, f.height > 0, f.midY < proxy.size.height * 0.35 else { continue }
-                let sameSide = onLeading ? f.midX < proxy.size.width * 0.4 : f.midX > proxy.size.width * 0.6
+                let sameSide = onLeading ? f.midX < width * 0.4 : f.midX > width * 0.6
                 guard sameSide else { continue }
-                if chosen == nil || f.maxY > chosen!.maxY { chosen = f }
+                if chosen == nil || f.width > chosen!.width { chosen = f }
             }
             if let f = chosen {
-                let pad = onLeading ? f.midX - 23 : proxy.size.width - f.midX - 23
-                if pad > 0 && pad < 140 { return max(pad, 4) }
+                let pad = onLeading ? f.midX - 23 : width - f.midX - 23
+                if pad > -60 && pad < 220 { return min(max(pad, 0), 220) }
             }
         }
         // 這一側看不到狀態圖：用與對側對稱的推定內縮，保持左右一致外观。
-        if proxy.size.width >= 430 && proxy.size.width < 550 { return 36 }
+        if width >= 430 && width < 550 { return 36 }
         return 10
+    }
+
+    // Duo wip 除錯：把系統回報的頂部 occlusion 座標彙整成字串，搭配畫面上的
+    // DuoLayoutDebugTag 從截圖讀出真實數值；正式發布前移除。
+    static func debugRegionSummary(in proxy: GeometryProxy) -> String {
+        if #available(iOS 27.1, *) {
+            var parts: [String] = []
+            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+                let f = region.frame
+                guard f.width > 0, f.height > 0 else { continue }
+                parts.append("\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
+                if parts.count >= 4 { break }
+            }
+            return parts.isEmpty ? "none" : parts.joined(separator: " | ")
+        }
+        return "n/a"
     }
 }
 
