@@ -91,6 +91,7 @@ struct ControlPanel<G: Gesture>: View {
                     let onLeading = Self.sideBarOnLeading(in: geo)
                     let topPad = Self.sideBarTopInset(in: geo)
                     let sidePad = Self.sideBarSideInset(in: geo, onLeading: onLeading)
+                    let centered = Self.isVerticallyCentered(in: geo)
                     SideControlBar(
                         title: title,
                         setting: $setting,
@@ -104,10 +105,10 @@ struct ControlPanel<G: Gesture>: View {
                     .frame(width: 46, alignment: .top)
                     .frame(
                         maxWidth: .infinity, maxHeight: .infinity,
-                        alignment: onLeading ? .topLeading : .topTrailing
+                        alignment: centered ? .trailing : (onLeading ? .topLeading : .topTrailing)
                     )
                     .padding(onLeading ? .leading : .trailing, sidePad)
-                    .padding(.top, topPad)
+                    .padding(.top, centered ? 0 : topPad)
                     .offset(y: showsPanel ? 0 : -40)
 
                     // Duo wip 除錯標籤：截圖可直接讀出系統回報值；正式發布前移除。
@@ -155,30 +156,28 @@ struct ControlPanel<G: Gesture>: View {
         return width >= 430 && width < 550
     }
 
-    /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）正下方 12pt，
-    /// 但以「狀態群頂端 + 105pt（群組推定高度）」封頂——全螢幕模式下充電點點等
-    /// 小物件会把最底值拉低、把控制條推得過低（IMG_0290 實測），封頂後三種
-    /// 模式（右半邊/全螢幕/左半邊）起點一致。
+    /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）預留區下緣 +12pt。
+    /// （不做封頂：封頂曾把控制條頂進預留區，✕ 被系統訊號圈擋住——IMG_0294 實測。）
     static func sideBarTopInset(in proxy: GeometryProxy) -> CGFloat {
         if #available(iOS 27.1, *) {
             var lowest: CGFloat = -1
-            var highest: CGFloat = .greatestFiniteMagnitude
             for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
                 guard region.frame.width > 0, region.frame.height > 0 else { continue }
                 guard region.frame.midY < proxy.size.height * 0.35 else { continue }
                 lowest = max(lowest, region.frame.maxY)
-                highest = min(highest, region.frame.minY)
             }
-            if lowest >= 0 {
-                let floorValue = max(lowest + 12, proxy.safeAreaInsets.top + 12)
-                let ceiling = max(proxy.safeAreaInsets.top, highest) + 105
-                return min(floorValue, ceiling)
-            }
+            if lowest >= 0 { return max(lowest + 12, proxy.safeAreaInsets.top + 12) }
         }
-        // 釘選 pane 模式下這一側看不到狀態圖（時鐘在另一半）：用與右半邊實測
-        // 起點對稱的推定值（IMG_0288 右半邊 ≈120pt），讓左右起點看起來一致。
-        if proxy.size.width >= 430 && proxy.size.width < 550 { return 120 }
+        // 釘選 pane 這一側看不到狀態圖：用右半邊實測值（預留區下緣 112pt + 12pt）對稱。
+        if proxy.size.width >= 430 && proxy.size.width < 550 { return 124 }
         return proxy.safeAreaInsets.top + 16
+    }
+
+    /// 直式全螢幕：控制條放右緣垂直置中（使用者指定位置），不貼頂部狀態群。
+    static func isVerticallyCentered(in proxy: GeometryProxy) -> Bool {
+        let width = proxy.size.width
+        let isPaneMode = width >= 430 && width < 550
+        return proxy.size.height > width && !isPaneMode
     }
 
     /// 側邊控制條的水平內縮：讓按鈕列的中軸對齊同側狀態圖（時鐘/訊號圈）的中心 x，
@@ -200,8 +199,8 @@ struct ControlPanel<G: Gesture>: View {
                 if pad > -60 && pad < 220 { return min(max(pad, 0), 220) }
             }
         }
-        // 這一側看不到狀態圖：用與對側對稱的推定內縮，保持左右一致外观。
-        if width >= 430 && width < 550 { return 36 }
+        // 這一側看不到狀態圖：鏡像右半邊實測位置（按鈕列中心距右緣 ≈82pt）→ 內縮 59pt。
+        if width >= 430 && width < 550 { return 59 }
         return 10
     }
 
