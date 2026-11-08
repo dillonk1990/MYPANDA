@@ -218,6 +218,12 @@ extension View {
 // 解法二：左半邊系統還會替圓鈕列保留約 100pt 的「幽靈留白」，內容被擠窄，
 //         用等量負邊距抵銷，使左右兩側內容都滿版（欄數一致）。
 // 偵測邏輯與閱讀頁側邊控制條相同（三訊號複合判斷）。
+// 幾何訊號包裝：Swift 的元組無法直接符合 Equatable 協定，用結構包住供 onChange 比對。
+struct DuoGeometrySignature: Equatable {
+    let size: CGSize
+    let insets: EdgeInsets
+}
+
 struct DuoTopSpacerModifier: ViewModifier {
     @State private var showSpacer = false
     @State private var leadingBleed: CGFloat = 0
@@ -231,7 +237,7 @@ struct DuoTopSpacerModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { refresh(in: proxy) }
-                        .onChange(of: (proxy.size, proxy.safeAreaInsets)) { _, _ in
+                        .onChange(of: DuoGeometrySignature(size: proxy.size, insets: proxy.safeAreaInsets)) { _, _ in
                             refresh(in: proxy)
                         }
                 }
@@ -307,7 +313,7 @@ struct DuoReservedTrailingModifier: ViewModifier {
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear { refresh(in: proxy) }
-                        .onChange(of: (proxy.size, proxy.safeAreaInsets)) { _, _ in refresh(in: proxy) }
+                        .onChange(of: DuoGeometrySignature(size: proxy.size, insets: proxy.safeAreaInsets)) { _, _ in refresh(in: proxy) }
                 }
             )
     }
