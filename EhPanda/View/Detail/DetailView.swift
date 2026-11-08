@@ -487,20 +487,36 @@ private struct DescriptionSection: View {
         return max(window / 5, 80)
     }
 
+    /// Duo 釘選 pane（窗寬實測 469）：與 itemWidth 用同一個寬度門檻
+    private var duoPaneMode: Bool {
+        let window = DeviceUtil.absWindowW
+        return window >= 430 && window < 550
+    }
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
                 ForEach(infos) { info in
-                    Group {
-                        if info.isRating {
-                            DescScrollRatingItem(title: info.title, rating: info.rating)
-                        } else {
+                    if duoPaneMode, info == infos.last {
+                        // Duo pane：藏掉自帶的藍色 ⋯，避免與系統圓形 ‹⋯ 鈕並排誤按（IMG_0312）；
+                        // 完整資訊頁的跳轉改掛在「檔案大小」欄本身，功能不丢。
+                        Button(action: navigateGalleryInfosAction) {
                             DescScrollItem(title: info.title, value: info.value, description: info.description)
                         }
+                        .buttonStyle(.plain)
+                        .frame(width: itemWidth)
+                    } else {
+                        Group {
+                            if info.isRating {
+                                DescScrollRatingItem(title: info.title, rating: info.rating)
+                            } else {
+                                DescScrollItem(title: info.title, value: info.value, description: info.description)
+                            }
+                        }
+                        .frame(width: itemWidth).drawingGroup()
                     }
-                    .frame(width: itemWidth).drawingGroup()
                     Divider()
-                    if info == infos.last {
+                    if info == infos.last, !duoPaneMode {
                         Button(action: navigateGalleryInfosAction) {
                             Image(systemSymbol: .ellipsis)
                                 .font(.system(size: 20, weight: .bold))
