@@ -30,7 +30,9 @@ struct GalleryHistoryCell: View {
             .font(.caption)
             Spacer()
         }
-        .frame(width: Defaults.ImageSize.rowW * 3, height: Defaults.ImageSize.rowH * 0.75)
+        // Duo：寬度改彈性——由外部網格決定欄寬（全螢幕/半邊自動換列），高度固定。
+        .frame(maxWidth: .infinity)
+        .frame(height: Defaults.ImageSize.rowH * 0.75)
     }
 }
 

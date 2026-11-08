@@ -393,11 +393,12 @@ private struct HistoryGalleriesSection: View {
 
     var body: some View {
         SubSection(title: L10n.Localizable.SearchView.Section.Title.recentlySeen, showAll: false) {
-            // Duo：橫向捲動改為自動換列——放不下就排到下一列，不會延伸到系統按鈕欄下。
+            // Duo：橫向捲動改為自動換列——依可用寬度自動決定每列張數（全螢幕 4、半邊 2、外屏 2），
+            // 放不下就排到下一列，不會延伸到系統按鈕欄下。
             LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: Defaults.ImageSize.rowW * 3, maximum: Defaults.ImageSize.rowW * 3), spacing: 20)],
+                columns: [GridItem(.adaptive(minimum: 150), spacing: 16)],
                 alignment: .leading,
-                spacing: 20
+                spacing: 16
             ) {
                 ForEach(galleries) { gallery in
                     Button {
