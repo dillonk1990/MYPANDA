@@ -214,13 +214,17 @@ extension View {
 
 // Duo 實驗(B)：app 釘在內屏左半邊時，頂部沒有時鐘/訊號當錨點，
 // 系統的側邊圓形按鈕直欄（返回/更多）就從最頂端開始排，看起來比右半邊高。
-// 解法：只在「左半邊」情況往頂部插一根隱形墊高柱（110pt），把系統按鈕往下推，
-// 讓兩側起點對齊。偵測邏輯與閱讀頁側邊控制條相同（三訊號複合判斷）。
+// 解法一：往頂部插一根隱形墊高柱（110pt），把系統按鈕往下推，讓兩側起點對齊。
+// 解法二：左半邊系統還會替圓鈕列保留約 100pt 的「幽靈留白」，內容被擠窄，
+//         用等量負邊距抵銷，使左右兩側內容都滿版（欄數一致）。
+// 偵測邏輯與閱讀頁側邊控制條相同（三訊號複合判斷）。
 struct DuoTopSpacerModifier: ViewModifier {
     @State private var showSpacer = false
+    @State private var leadingBleed: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
+            .padding(.leading, leadingBleed)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -242,7 +246,11 @@ struct DuoTopSpacerModifier: ViewModifier {
     }
 
     private func refresh(in proxy: GeometryProxy) {
-        showSpacer = Self.isPinnedLeftPane(in: proxy)
+        let leftPane = Self.isPinnedLeftPane(in: proxy)
+        showSpacer = leftPane
+        // 左半邊：抵銷系統替側邊圓鈕列保留的 leading 安全區（合理範圍內才動作）
+        let inset = proxy.safeAreaInsets.leading
+        leadingBleed = (leftPane && inset > 24 && inset < 160) ? -inset : 0
     }
 
     // 三訊號複合判斷：
