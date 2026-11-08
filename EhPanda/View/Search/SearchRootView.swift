@@ -393,17 +393,19 @@ private struct HistoryGalleriesSection: View {
 
     var body: some View {
         SubSection(title: L10n.Localizable.SearchView.Section.Title.recentlySeen, showAll: false) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(galleries) { gallery in
-                        Button {
-                            navigationAction(gallery.id)
-                        } label: {
-                            GalleryHistoryCell(gallery: gallery)
-                                .tint(.primary).multilineTextAlignment(.leading)
-                        }
+            // Duo：橫向捲動改為自動換列——放不下就排到下一列，不會延伸到系統按鈕欄下。
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: Defaults.ImageSize.rowW * 3, maximum: Defaults.ImageSize.rowW * 3), spacing: 20)],
+                alignment: .leading,
+                spacing: 20
+            ) {
+                ForEach(galleries) { gallery in
+                    Button {
+                        navigationAction(gallery.id)
+                    } label: {
+                        GalleryHistoryCell(gallery: gallery)
+                            .tint(.primary).multilineTextAlignment(.leading)
                     }
-                    .withHorizontalSpacing()
                 }
             }
             .duoReservedTrailing()
