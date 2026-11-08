@@ -64,6 +64,10 @@ struct AppLockReducer {
 
             case .authorize:
                 return .run { send in
+                    // scenePhase 轉 .active 的瞬間 App 尚未完全回到前台，
+                    // 這時呼叫 evaluatePolicy 會被系統靜默拒絕（Face ID 視窗不出現）。
+                    // 等一下再觸發，自動與手動點鎖頭兩條路徑都覆蓋。
+                    try? await Task.sleep(for: .milliseconds(400))
                     let success = await authorizationClient.localAuthroize(L10n.Localizable.LocalAuthorization.reason)
                     await send(.authorizeDone(success))
                 }
