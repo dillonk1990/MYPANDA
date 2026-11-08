@@ -252,11 +252,25 @@ struct DuoTopSpacerModifier: ViewModifier {
     @State private var showSpacer = false
     @State private var leadingBleed: CGFloat = 0
     @State private var mirrorHeader = false
+    @State private var geoSummary = ""
 
     func body(content: Content) -> some View {
         content
             .padding(.leading, leadingBleed)
             .environment(\.duoMirrorHeader, mirrorHeader)
+            .overlay(alignment: .topLeading) {
+                // Duo wip 除錯標籤：確認釘選偵測與留白數值；正式發布前移除。
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("pinL=\(showSpacer ? 1 : 0) bleed=\(Int(leadingBleed)) mirr=\(mirrorHeader ? 1 : 0)")
+                    Text(geoSummary)
+                }
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(.yellow)
+                .padding(6)
+                .background(Color.black.opacity(0.6))
+                .offset(x: 60, y: 8)
+                .allowsHitTesting(false)
+            }
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -270,7 +284,7 @@ struct DuoTopSpacerModifier: ViewModifier {
                 if showSpacer {
                     ToolbarItem(placement: .topBarLeading) {
                         Color.clear
-                            .frame(width: 1, height: 110)
+                            .frame(width: 1, height: 124)
                             .allowsHitTesting(false)
                     }
                 }
@@ -284,6 +298,21 @@ struct DuoTopSpacerModifier: ViewModifier {
         // 左半邊：抵銷系統替側邊圓鈕列保留的 leading 安全區（合理範圍內才動作）
         let inset = proxy.safeAreaInsets.leading
         leadingBleed = (leftPane && inset > 24 && inset < 160) ? -inset : 0
+        if #available(iOS 27.1, *) {
+            var parts: [String] = []
+            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+                let f = region.frame
+                guard f.width > 0, f.height > 0 else { continue }
+                parts.append("o\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
+            }
+            for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
+                let f = region.frame
+                guard f.width > 0, f.height > 0 else { continue }
+                parts.append("d\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
+            }
+            geoSummary = "w=\(Int(proxy.size.width)) L\(Int(proxy.safeAreaInsets.leading)) R\(Int(proxy.safeAreaInsets.trailing)) "
+                + (parts.isEmpty ? "none" : parts.joined(separator: "|"))
+        }
     }
 
     // 三訊號複合判斷：
