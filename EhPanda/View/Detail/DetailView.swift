@@ -206,6 +206,7 @@ struct DetailView: View {
             }
             .background(navigationLinks)
             .toolbar(content: toolbar)
+            .duoTopSpacer()
     }
 }
 

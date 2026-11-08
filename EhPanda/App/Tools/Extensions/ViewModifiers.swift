@@ -211,3 +211,62 @@ extension View {
         modifier(DuoTabBarKeeperModifier())
     }
 }
+
+// Duo 實驗(B)：app 釘在內屏左半邊時，頂部沒有時鐘/訊號當錨點，
+// 系統的側邊圓形按鈕直欄（返回/更多）就從最頂端開始排，看起來比右半邊高。
+// 解法：只在「左半邊」情況往頂部插一根隱形墊高柱（110pt），把系統按鈕往下推，
+// 讓兩側起點對齊。偵測邏輯與閱讀頁側邊控制條相同（三訊號複合判斷）。
+struct DuoTopSpacerModifier: ViewModifier {
+    @State private var showSpacer = false
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { refresh(in: proxy) }
+                        .onChange(of: (proxy.size, proxy.safeAreaInsets)) { _, _ in
+                            refresh(in: proxy)
+                        }
+                }
+            )
+            .toolbar {
+                if showSpacer {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Color.clear
+                            .frame(width: 1, height: 110)
+                            .allowsHitTesting(false)
+                    }
+                }
+            }
+    }
+
+    private func refresh(in proxy: GeometryProxy) {
+        showSpacer = Self.isPinnedLeftPane(in: proxy)
+    }
+
+    // 三訊號複合判斷：
+    // 1) 摺痕 region 偏右 -> 左 pane；偏左 -> 右 pane
+    // 2) 有作用中的 occlusion（狀態膠囊/時鐘）-> 該 pane 是「有狀態那側」，維持右
+    // 3) 窄窗（snap 寬）且無 occlusion -> 左 pane
+    static func isPinnedLeftPane(in proxy: GeometryProxy) -> Bool {
+        guard #available(iOS 27.1, *), DeviceUtil.isPhone else { return false }
+        let width = proxy.size.width
+        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0 else { continue }
+            if region.frame.midX > width * 0.6 { return true }
+            if region.frame.midX < width * 0.4 { return false }
+        }
+        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0, region.frame.height > 0 else { continue }
+            return false
+        }
+        return width >= 430 && width < 550
+    }
+}
+
+extension View {
+    func duoTopSpacer() -> some View {
+        modifier(DuoTopSpacerModifier())
+    }
+}
