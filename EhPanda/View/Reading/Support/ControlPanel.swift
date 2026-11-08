@@ -156,6 +156,9 @@ struct ControlPanel<G: Gesture>: View {
             }
             if lowest >= 0 { return max(lowest + 12, proxy.safeAreaInsets.top + 12) }
         }
+        // 釘選 pane 模式下這一側看不到狀態圖（時鐘在另一半）：用與對側對稱的推定值，
+        // 讓左右兩邊的起點看起來一致；數值可依實測結果調整。
+        if proxy.size.width >= 430 && proxy.size.width < 550 { return 88 }
         return proxy.safeAreaInsets.top + 16
     }
 
@@ -176,6 +179,8 @@ struct ControlPanel<G: Gesture>: View {
                 if pad > 0 && pad < 140 { return max(pad, 4) }
             }
         }
+        // 這一側看不到狀態圖：用與對側對稱的推定內縮，保持左右一致外观。
+        if proxy.size.width >= 430 && proxy.size.width < 550 { return 36 }
         return 10
     }
 }
