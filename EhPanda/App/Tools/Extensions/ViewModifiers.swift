@@ -249,7 +249,6 @@ struct DuoGeometrySignature: Equatable {
 }
 
 struct DuoTopSpacerModifier: ViewModifier {
-    @State private var showSpacer = false
     @State private var leadingBleed: CGFloat = 0
     @State private var mirrorHeader = false
     @State private var geoSummary = ""
@@ -262,7 +261,7 @@ struct DuoTopSpacerModifier: ViewModifier {
                 // Duo wip 除錯標籤：確認釘選偵測與留白數值；正式發布前移除。
                 // 放左下角：不再壓到書名/封面（IMG_0304 反饋）。
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("pinL=\(showSpacer ? 1 : 0) bleed=\(Int(leadingBleed)) mirr=\(mirrorHeader ? 1 : 0)")
+                    Text("pinL=\(mirrorHeader ? 1 : 0) bleed=\(Int(leadingBleed)) mirr=\(mirrorHeader ? 1 : 0)")
                     Text(geoSummary)
                 }
                 .font(.system(size: 10, design: .monospaced))
@@ -281,20 +280,13 @@ struct DuoTopSpacerModifier: ViewModifier {
                         }
                 }
             )
-            .toolbar {
-                if showSpacer {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Color.clear
-                            .frame(width: 1, height: 124)
-                            .allowsHitTesting(false)
-                    }
-                }
-            }
+            // （已拆）墊高用的 topBarLeading 空白 ToolbarItem：iOS 27 Duo 模式
+            // 會把工具列項目轉成圓形按鈕，它變成 ‹ 旁邊一顆無作用空白圓鈕，
+            // 而且 ‹⋯ 位置也沒有真的被推下（IMG_0313），整塊移除。
     }
 
     private func refresh(in proxy: GeometryProxy) {
         let leftPane = Self.isPinnedLeftPane(in: proxy)
-        showSpacer = leftPane
         mirrorHeader = leftPane
         // （已關）leadingBleed：IMG_0308/0309 實測左右半邊內容寬度都是 385pt，
         // 本來就一致、沒有「幽靈留白」；開啟反而會把內容滑進系統圓鈕列底下。
