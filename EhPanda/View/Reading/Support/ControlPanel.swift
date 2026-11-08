@@ -90,8 +90,9 @@ struct ControlPanel<G: Gesture>: View {
                 GeometryReader { geo in
                     let onLeading = Self.sideBarOnLeading(in: geo)
                     let topPad = Self.sideBarTopInset(in: geo)
-                    let sidePad = Self.sideBarSideInset(in: geo, onLeading: onLeading)
                     let centered = Self.isVerticallyCentered(in: geo)
+                    // 直式全螢幕：控制欄貼右緣（IMG_0298 使用者指定往右靠邊）。
+                    let sidePad = centered ? 16 : Self.sideBarSideInset(in: geo, onLeading: onLeading)
                     SideControlBar(
                         title: title,
                         setting: $setting,
@@ -137,23 +138,12 @@ struct ControlPanel<G: Gesture>: View {
         return false
     }
 
-    /// Duo 半屏釘選模式：控制條放「背對摺痕」的那一側（螢幕外緣、拇指好夠）。
-    /// 1) 半折狀態摺痕(division)在視窗右緣 → 釘左半邊 → 控制條放左緣。
-    /// 2) 系統狀態膠囊(occlusion)在本視窗內 → 這是膠囊那側（右）→ 維持右緣。
-    /// 3) 窄窗（內屏 pane 寬度）且看不到狀態膠囊 → 遠離膠囊的左半邊 → 控制條放左緣。
+    /// Duo 模式控制條一律放「右緣」：
+    /// - 右半邊釘選 / 全螢幕：右緣=狀態群那一側（IMG_0294 使用者核准位置）。
+    /// - 左半邊釘選：使用者指定改放視窗右側（貼摺痕那側的邊，IMG_0299 反饋
+    ///   「左半往右一欄快靠邊」）。
     static func sideBarOnLeading(in proxy: GeometryProxy) -> Bool {
-        guard #available(iOS 27.1, *) else { return false }
-        let width = proxy.size.width
-        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
-            guard region.frame.width > 0 else { continue }
-            if region.frame.midX > width * 0.6 { return true }
-            if region.frame.midX < width * 0.4 { return false }
-        }
-        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
-            guard region.frame.width > 0, region.frame.height > 0 else { continue }
-            return false
-        }
-        return width >= 430 && width < 550
+        return false
     }
 
     /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）預留區下緣 +12pt。
