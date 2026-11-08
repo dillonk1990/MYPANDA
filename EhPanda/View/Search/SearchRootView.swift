@@ -58,6 +58,9 @@ struct SearchRootView: View {
                 .accentColor(setting.accentColor)
                 .autoBlur(radius: blurRadius)
             }
+            // Duo：watcher 必須挂在 searchable 的「下方」（isSearching 環境值
+            // 只注入 searchable 的內容子樹，不會往上傳），才能收到收合事件。
+            .background(DuoSearchDismissWatcher())
             .searchable(text: $store.keyword)
             .searchSuggestions {
                 TagSuggestionView(
@@ -75,6 +78,8 @@ struct SearchRootView: View {
             .background(navigationLinks)
             .toolbar(content: toolbar)
             .navigationTitle(L10n.Localizable.SearchView.Title.search)
+            // Duo：keeper 挂在內容上（原本挂 NavigationView 外層補錯時機）。
+            .duoTabBarKeeper()
 
             if DeviceUtil.isPad {
                 content
@@ -101,7 +106,6 @@ struct SearchRootView: View {
                 }
             }
         }
-        .duoTabBarKeeper()
     }
 
     private func toolbar() -> some ToolbarContent {
@@ -410,6 +414,10 @@ private struct HistoryGalleriesSection: View {
                 }
             }
             .duoReservedTrailing()
+            // Duo：標題列有 .padding(.horizontal) 的 16pt 內縮，但 SubSection 的
+            // 內容區塊本身沒有任何內縮，所以卡片會比標題更貼螢幕左緣。補同樣的
+            // 水平內縮讓第一張卡與「最近閱讀」標題切齊。
+            .padding(.horizontal)
         }
     }
 }

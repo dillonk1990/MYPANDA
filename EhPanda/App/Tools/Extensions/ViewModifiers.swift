@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Combine
 import Kingfisher
 
 extension View {
@@ -186,7 +187,12 @@ struct PreviewResolver {
 
 // Duo (iOS 27.1+)：系統把主選單轉成側邊圓形按鈕直欄。
 // 系統搜尋介面收合後偶爾忘記把該直欄放回（只有重開 App 才恢復）。
-// 保險：每次進入各主分頁，顯式通知系統保持 tab bar 可見。
+// 觸發時機在「搜尋收合的瞬間」，所以除了進入分頁時補一次，
+// 另由 DuoSearchDismissWatcher 偵測 isSearching 由 true→false 發通知，收到再補一次。
+extension Notification.Name {
+    static let duoSearchSessionEnded = Notification.Name("duoSearchSessionEnded")
+}
+
 struct DuoTabBarKeeperModifier: ViewModifier {
     @State private var forceVisible = false
 
@@ -196,12 +202,30 @@ struct DuoTabBarKeeperModifier: ViewModifier {
                 forceVisible ? .visible : .automatic,
                 for: .tabBar
             )
-            .onAppear {
-                guard #available(iOS 27.1, *), DeviceUtil.isPhone else { return }
-                forceVisible = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                    forceVisible = true
-                }
+            .onAppear { nudge() }
+            .onReceive(NotificationCenter.default.publisher(for: .duoSearchSessionEnded)) { _ in
+                nudge()
+            }
+    }
+
+    private func nudge() {
+        guard #available(iOS 27.1, *), DeviceUtil.isPhone else { return }
+        forceVisible = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            forceVisible = true
+        }
+    }
+}
+
+// 放在 searchable 內容子樹內：搜尋介面收合（isSearching true→false）時發通知。
+struct DuoSearchDismissWatcher: View {
+    @Environment(\.isSearching) private var isSearching
+
+    var body: some View {
+        Color.clear
+            .onChange(of: isSearching) { oldValue, newValue in
+                guard oldValue && !newValue else { return }
+                NotificationCenter.default.post(name: .duoSearchSessionEnded, object: nil)
             }
     }
 }
