@@ -145,20 +145,28 @@ struct ControlPanel<G: Gesture>: View {
     }
 
     /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）正下方 12pt，
-    /// 與橫向全螢幕、左右半邊钉選模式皆適用；看不到狀態區時退回安全區頂部。
+    /// 但以「狀態群頂端 + 105pt（群組推定高度）」封頂——全螢幕模式下充電點點等
+    /// 小物件会把最底值拉低、把控制條推得過低（IMG_0290 實測），封頂後三種
+    /// 模式（右半邊/全螢幕/左半邊）起點一致。
     static func sideBarTopInset(in proxy: GeometryProxy) -> CGFloat {
         if #available(iOS 27.1, *) {
             var lowest: CGFloat = -1
+            var highest: CGFloat = .greatestFiniteMagnitude
             for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
                 guard region.frame.width > 0, region.frame.height > 0 else { continue }
                 guard region.frame.midY < proxy.size.height * 0.35 else { continue }
                 lowest = max(lowest, region.frame.maxY)
+                highest = min(highest, region.frame.minY)
             }
-            if lowest >= 0 { return max(lowest + 12, proxy.safeAreaInsets.top + 12) }
+            if lowest >= 0 {
+                let floorValue = max(lowest + 12, proxy.safeAreaInsets.top + 12)
+                let ceiling = max(proxy.safeAreaInsets.top, highest) + 105
+                return min(floorValue, ceiling)
+            }
         }
-        // 釘選 pane 模式下這一側看不到狀態圖（時鐘在另一半）：用與對側對稱的推定值，
-        // 讓左右兩邊的起點看起來一致；數值可依實測結果調整。
-        if proxy.size.width >= 430 && proxy.size.width < 550 { return 88 }
+        // 釘選 pane 模式下這一側看不到狀態圖（時鐘在另一半）：用與右半邊實測
+        // 起點對稱的推定值（IMG_0288 右半邊 ≈120pt），讓左右起點看起來一致。
+        if proxy.size.width >= 430 && proxy.size.width < 550 { return 120 }
         return proxy.safeAreaInsets.top + 16
     }
 
