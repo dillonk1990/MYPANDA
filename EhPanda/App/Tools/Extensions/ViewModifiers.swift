@@ -251,26 +251,11 @@ struct DuoGeometrySignature: Equatable {
 struct DuoTopSpacerModifier: ViewModifier {
     @State private var leadingBleed: CGFloat = 0
     @State private var mirrorHeader = false
-    @State private var geoSummary = ""
 
     func body(content: Content) -> some View {
         content
             .padding(.leading, leadingBleed)
             .environment(\.duoMirrorHeader, mirrorHeader)
-            .overlay(alignment: .bottomLeading) {
-                // Duo wip 除錯標籤：確認釘選偵測與留白數值；正式發布前移除。
-                // 放左下角：不再壓到書名/封面（IMG_0304 反饋）。
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("pinL=\(mirrorHeader ? 1 : 0) bleed=\(Int(leadingBleed)) mirr=\(mirrorHeader ? 1 : 0)")
-                    Text(geoSummary)
-                }
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(.yellow)
-                .padding(6)
-                .background(Color.black.opacity(0.6))
-                .offset(x: 12, y: -12)
-                .allowsHitTesting(false)
-            }
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -291,21 +276,6 @@ struct DuoTopSpacerModifier: ViewModifier {
         // （已關）leadingBleed：IMG_0308/0309 實測左右半邊內容寬度都是 385pt，
         // 本來就一致、沒有「幽靈留白」；開啟反而會把內容滑進系統圓鈕列底下。
         leadingBleed = 0
-        if #available(iOS 27.1, *) {
-            var parts: [String] = []
-            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
-                let f = region.frame
-                guard f.width > 0, f.height > 0 else { continue }
-                parts.append("o\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
-            }
-            for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
-                let f = region.frame
-                guard f.width > 0, f.height > 0 else { continue }
-                parts.append("d\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
-            }
-            geoSummary = "w=\(Int(proxy.size.width)) L\(Int(proxy.safeAreaInsets.leading)) R\(Int(proxy.safeAreaInsets.trailing)) "
-                + (parts.isEmpty ? "none" : parts.joined(separator: "|"))
-        }
     }
 
     // 釘選側判斷（IMG_0308/0309 黃字實測 ground truth）：

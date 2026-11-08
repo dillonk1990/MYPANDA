@@ -111,17 +111,6 @@ struct ControlPanel<G: Gesture>: View {
                     .padding(onLeading ? .leading : .trailing, sidePad)
                     .padding(.top, centered ? 0 : topPad)
                     .offset(y: showsPanel ? 0 : -40)
-
-                    // Duo wip 除錯標籤：截圖可直接讀出系統回報值；正式發布前移除。
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("side=\(onLeading ? "L" : "R") top=\(Int(topPad)) pad=\(Int(sidePad)) w=\(Int(geo.size.width))")
-                        Text(Self.debugRegionSummary(in: geo))
-                    }
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(.yellow)
-                    .padding(6)
-                    .background(Color.black.opacity(0.6))
-                    .offset(x: 8, y: 8)
                 }
             }
         }
@@ -204,22 +193,6 @@ struct ControlPanel<G: Gesture>: View {
         // 這一側看不到狀態圖：鏡像右半邊實測位置（按鈕列中心距右緣 ≈82pt）→ 內縮 59pt。
         if width >= 430 && width < 550 { return 59 }
         return 10
-    }
-
-    // Duo wip 除錯：把系統回報的頂部 occlusion 座標彙整成字串，搭配畫面上的
-    // DuoLayoutDebugTag 從截圖讀出真實數值；正式發布前移除。
-    static func debugRegionSummary(in proxy: GeometryProxy) -> String {
-        if #available(iOS 27.1, *) {
-            var parts: [String] = []
-            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
-                let f = region.frame
-                guard f.width > 0, f.height > 0 else { continue }
-                parts.append("\(Int(f.minX)),\(Int(f.minY)) \(Int(f.width))x\(Int(f.height))")
-                if parts.count >= 4 { break }
-            }
-            return parts.isEmpty ? "none" : parts.joined(separator: " | ")
-        }
-        return "n/a"
     }
 }
 
