@@ -89,6 +89,7 @@ struct ControlPanel<G: Gesture>: View {
             if Self.usesSideControlBar {
                 GeometryReader { geo in
                     let onLeading = Self.sideBarOnLeading(in: geo)
+                    let topPad = Self.sideBarTopInset(in: geo)
                     SideControlBar(
                         title: title,
                         setting: $setting,
@@ -101,9 +102,10 @@ struct ControlPanel<G: Gesture>: View {
                     )
                     .frame(
                         maxWidth: .infinity, maxHeight: .infinity,
-                        alignment: onLeading ? .leading : .trailing
+                        alignment: onLeading ? .topLeading : .topTrailing
                     )
                     .padding(onLeading ? .leading : .trailing, 10)
+                    .padding(.top, topPad)
                     .offset(y: showsPanel ? 0 : -40)
                 }
             }
@@ -138,6 +140,21 @@ struct ControlPanel<G: Gesture>: View {
             return false
         }
         return width >= 430 && width < 550
+    }
+
+    /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）正下方 12pt，
+    /// 與橫向全螢幕、左右半邊钉選模式皆適用；看不到狀態區時退回安全區頂部。
+    static func sideBarTopInset(in proxy: GeometryProxy) -> CGFloat {
+        if #available(iOS 27.1, *) {
+            var lowest: CGFloat = -1
+            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+                guard region.frame.width > 0, region.frame.height > 0 else { continue }
+                guard region.frame.midY < proxy.size.height * 0.35 else { continue }
+                lowest = max(lowest, region.frame.maxY)
+            }
+            if lowest >= 0 { return max(lowest + 12, proxy.safeAreaInsets.top + 12) }
+        }
+        return proxy.safeAreaInsets.top + 16
     }
 }
 
