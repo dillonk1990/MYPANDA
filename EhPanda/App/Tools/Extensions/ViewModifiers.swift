@@ -258,8 +258,9 @@ struct DuoTopSpacerModifier: ViewModifier {
         content
             .padding(.leading, leadingBleed)
             .environment(\.duoMirrorHeader, mirrorHeader)
-            .overlay(alignment: .topLeading) {
+            .overlay(alignment: .bottomLeading) {
                 // Duo wip 除錯標籤：確認釘選偵測與留白數值；正式發布前移除。
+                // 放左下角：不再壓到書名/封面（IMG_0304 反饋）。
                 VStack(alignment: .leading, spacing: 2) {
                     Text("pinL=\(showSpacer ? 1 : 0) bleed=\(Int(leadingBleed)) mirr=\(mirrorHeader ? 1 : 0)")
                     Text(geoSummary)
@@ -268,7 +269,7 @@ struct DuoTopSpacerModifier: ViewModifier {
                 .foregroundColor(.yellow)
                 .padding(6)
                 .background(Color.black.opacity(0.6))
-                .offset(x: 60, y: 8)
+                .offset(x: 12, y: -12)
                 .allowsHitTesting(false)
             }
             .background(
