@@ -90,6 +90,7 @@ struct ControlPanel<G: Gesture>: View {
                 GeometryReader { geo in
                     let onLeading = Self.sideBarOnLeading(in: geo)
                     let topPad = Self.sideBarTopInset(in: geo)
+                    let sidePad = Self.sideBarSideInset(in: geo, onLeading: onLeading)
                     SideControlBar(
                         title: title,
                         setting: $setting,
@@ -100,11 +101,12 @@ struct ControlPanel<G: Gesture>: View {
                         reloadAllImagesAction: reloadAllImagesAction,
                         retryAllFailedImagesAction: retryAllFailedImagesAction
                     )
+                    .frame(width: 46, alignment: .top)
                     .frame(
                         maxWidth: .infinity, maxHeight: .infinity,
                         alignment: onLeading ? .topLeading : .topTrailing
                     )
-                    .padding(onLeading ? .leading : .trailing, 10)
+                    .padding(onLeading ? .leading : .trailing, sidePad)
                     .padding(.top, topPad)
                     .offset(y: showsPanel ? 0 : -40)
                 }
@@ -155,6 +157,26 @@ struct ControlPanel<G: Gesture>: View {
             if lowest >= 0 { return max(lowest + 12, proxy.safeAreaInsets.top + 12) }
         }
         return proxy.safeAreaInsets.top + 16
+    }
+
+    /// 側邊控制條的水平內縮：讓按鈕列的中軸對齊同側狀態圖（時鐘/訊號圈）的中心 x，
+    /// 使「✕」正好排在訊號圈正下方同一條直線上；找不到狀態圖時退回 10pt。
+    static func sideBarSideInset(in proxy: GeometryProxy, onLeading: Bool) -> CGFloat {
+        if #available(iOS 27.1, *) {
+            var chosen: CGRect?
+            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+                let f = region.frame
+                guard f.width > 0, f.height > 0, f.midY < proxy.size.height * 0.35 else { continue }
+                let sameSide = onLeading ? f.midX < proxy.size.width * 0.4 : f.midX > proxy.size.width * 0.6
+                guard sameSide else { continue }
+                if chosen == nil || f.maxY > chosen!.maxY { chosen = f }
+            }
+            if let f = chosen {
+                let pad = onLeading ? f.midX - 23 : proxy.size.width - f.midX - 23
+                if pad > 0 && pad < 140 { return max(pad, 4) }
+            }
+        }
+        return 10
     }
 }
 
