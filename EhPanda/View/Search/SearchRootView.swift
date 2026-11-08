@@ -406,6 +406,7 @@ private struct HistoryGalleriesSection: View {
                     .withHorizontalSpacing()
                 }
             }
+            .duoReservedTrailing()
         }
     }
 }

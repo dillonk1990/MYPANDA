@@ -294,3 +294,44 @@ extension EnvironmentValues {
         set { self[DuoMirrorHeaderKey.self] = newValue }
     }
 }
+
+// Duo：內容右緣自動停在系統側邊圓鈕欄（與時鐘/訊號圈同軸）之前，
+// 避免橫向全螢幕或釘右半邊時，橫向卡片列延伸到系統按鈕下方。
+struct DuoReservedTrailingModifier: ViewModifier {
+    @State private var inset: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.trailing, inset)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { refresh(in: proxy) }
+                        .onChange(of: (proxy.size, proxy.safeAreaInsets)) { _, _ in refresh(in: proxy) }
+                }
+            )
+    }
+
+    private func refresh(in proxy: GeometryProxy) {
+        var value: CGFloat = 0
+        if #available(iOS 27.1, *) {
+            let width = proxy.size.width, height = proxy.size.height
+            var minX: CGFloat = .greatestFiniteMagnitude
+            for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+                let f = region.frame
+                guard f.width > 0, f.height > 0, f.midY < height * 0.35, f.midX > width * 0.55 else { continue }
+                minX = min(minX, f.minX)
+            }
+            if minX < .greatestFiniteMagnitude {
+                value = max(0, width - minX + 12)
+            }
+        }
+        inset = value
+    }
+}
+
+extension View {
+    func duoReservedTrailing() -> some View {
+        modifier(DuoReservedTrailingModifier())
+    }
+}
