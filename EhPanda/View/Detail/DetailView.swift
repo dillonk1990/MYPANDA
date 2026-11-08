@@ -207,9 +207,8 @@ struct DetailView: View {
             .background(navigationLinks)
             .toolbar(content: toolbar)
             .duoTopSpacer()
-            // Duo：內容右緣停在系統側邊圓鈕列（與時鐘/訊號圈同軸）之前，
-            // 避免右半邊釘選時頁數欄/標籤列被返回・更多圓鈕壓住（IMG_0300）。
-            .duoReservedTrailing()
+            // （已撤）duoReservedTrailing：IMG_0304/0305 實測在左半邊與全螢幕都誤觸發，
+            // 憑空塞進 ~96pt 右側留白把內容擠壞；詳情頁改回不讓位、全螢幕滿版。
     }
 }
 
