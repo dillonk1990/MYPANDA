@@ -475,7 +475,16 @@ private struct DescriptionSection: View {
         )
     ]}
     private var itemWidth: Double {
-        max(DeviceUtil.absWindowW / 5, 80)
+        // Duo 釘選 pane（窗寬實測 469，系統在其中一側保留 83pt）：
+        // 原本 ÷5＝93.8pt/欄，四欄加間距要 405pt，超出可用的 385pt，
+        // 導致「頁數」欄被推出來（IMG_0308）或鑽到系統圓鈕下（IMG_0309）。
+        // pane 模式改用可用寬 ÷4，四欄完整入鏡；其他尺寸維持原樣。
+        let window = DeviceUtil.absWindowW
+        if window >= 430 && window < 550 {
+            // 可用寬≈窗寬-83(系統圓鈕列)；每欄另含 8pt×2 欄距，故再扣掉。
+            return max((window - 168) / 4, 80)
+        }
+        return max(window / 5, 80)
     }
 
     var body: some View {
