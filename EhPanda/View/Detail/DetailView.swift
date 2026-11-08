@@ -323,81 +323,112 @@ private struct HeaderSection: View {
         return displaysJapaneseTitle ? galleryDetail.jpnTitle ?? normalTitle : normalTitle
     }
 
+    @Environment(\.duoMirrorHeader) private var duoMirrorHeader
+
     var body: some View {
         HStack {
-            KFImage(gallery.coverURL)
-                .placeholder({ Placeholder(style: .activity(ratio: Defaults.ImageSize.headerAspect)) })
-                .defaultModifier()
-                .scaledToFit()
-                .frame(
-                    width: Defaults.ImageSize.headerW,
-                    height: Defaults.ImageSize.headerH
-                )
-
-            VStack(alignment: .leading) {
-                Button(action: showFullTitleAction) {
-                    Text(title)
-                        .font(.title3.bold())
-                        .multilineTextAlignment(.leading)
-                        .tint(.primary)
-                        .lineLimit(showFullTitle ? nil : 3)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Button(gallery.uploader ?? "", action: navigateUploaderAction)
-                    .lineLimit(1)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                HStack {
-                    CategoryLabel(
-                        text: gallery.category.value,
-                        color: gallery.color,
-                        font: .headline,
-                        insets: .init(top: 2, leading: 4, bottom: 2, trailing: 4),
-                        cornerRadius: 3
-                    )
-
-                    Spacer()
-
-                    ZStack {
-                        Button(action: unfavorAction) {
-                            Image(systemSymbol: .heartFill)
-                        }
-                        .opacity(galleryDetail.isFavorited ? 1 : 0)
-
-                        Menu {
-                            ForEach(0..<10) { index in
-                                Button(user.getFavoriteCategory(index: index)) {
-                                    favorAction(index)
-                                }
-                            }
-                        } label: {
-                            Image(systemSymbol: .heart)
-                        }
-                        .opacity(galleryDetail.isFavorited ? 0 : 1)
-                    }
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                    .buttonStyle(.glass(.regular.interactive()))
-                    .disabled(!CookieUtil.didLogin)
-
-                    Button(action: navigateReadingAction) {
-                        Text(L10n.Localizable.DetailView.Button.read)
-                            .bold().textCase(.uppercase).font(.headline)
-                            .foregroundColor(.white).padding(.vertical, -2)
-                            .padding(.horizontal, 2).lineLimit(1)
-                    }
-                    .buttonStyle(.glassProminent)
-                    .buttonBorderShape(.capsule)
-                }
-                .minimumScaleFactor(0.5)
+            if duoMirrorHeader {
+                infoColumn
+                coverImage
+            } else {
+                coverImage
+                infoColumn
             }
-            .padding(.horizontal, 10)
-            .frame(minHeight: Defaults.ImageSize.headerH)
         }
+    }
+
+    @ViewBuilder private var coverImage: some View {
+        KFImage(gallery.coverURL)
+            .placeholder({ Placeholder(style: .activity(ratio: Defaults.ImageSize.headerAspect)) })
+            .defaultModifier()
+            .scaledToFit()
+            .frame(
+                width: Defaults.ImageSize.headerW,
+                height: Defaults.ImageSize.headerH
+            )
+    }
+
+    @ViewBuilder private var infoColumn: some View {
+        VStack(alignment: .leading) {
+            Button(action: showFullTitleAction) {
+                Text(title)
+                    .font(.title3.bold())
+                    .multilineTextAlignment(.leading)
+                    .tint(.primary)
+                    .lineLimit(showFullTitle ? nil : 3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(gallery.uploader ?? "", action: navigateUploaderAction)
+                .lineLimit(1)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            HStack {
+                if duoMirrorHeader {
+                    // 釘左半邊：閱讀鈕推到最左（外緣），方便拇指按
+                    readButton
+                    heartControl
+                    Spacer()
+                    categoryLabel
+                } else {
+                    categoryLabel
+                    Spacer()
+                    heartControl
+                    readButton
+                }
+            }
+            .minimumScaleFactor(0.5)
+        }
+        .padding(.horizontal, 10)
+        .frame(minHeight: Defaults.ImageSize.headerH)
+    }
+
+    @ViewBuilder private var categoryLabel: some View {
+        CategoryLabel(
+            text: gallery.category.value,
+            color: gallery.color,
+            font: .headline,
+            insets: .init(top: 2, leading: 4, bottom: 2, trailing: 4),
+            cornerRadius: 3
+        )
+    }
+
+    @ViewBuilder private var heartControl: some View {
+        ZStack {
+            Button(action: unfavorAction) {
+                Image(systemSymbol: .heartFill)
+            }
+            .opacity(galleryDetail.isFavorited ? 1 : 0)
+
+            Menu {
+                ForEach(0..<10) { index in
+                    Button(user.getFavoriteCategory(index: index)) {
+                        favorAction(index)
+                    }
+                }
+            } label: {
+                Image(systemSymbol: .heart)
+            }
+            .opacity(galleryDetail.isFavorited ? 0 : 1)
+        }
+        .imageScale(.large)
+        .foregroundStyle(.tint)
+        .buttonStyle(.glass(.regular.interactive()))
+        .disabled(!CookieUtil.didLogin)
+    }
+
+    @ViewBuilder private var readButton: some View {
+        Button(action: navigateReadingAction) {
+            Text(L10n.Localizable.DetailView.Button.read)
+                .bold().textCase(.uppercase).font(.headline)
+                .foregroundColor(.white).padding(.vertical, -2)
+                .padding(.horizontal, 2).lineLimit(1)
+        }
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.capsule)
     }
 }
 

@@ -221,10 +221,12 @@ extension View {
 struct DuoTopSpacerModifier: ViewModifier {
     @State private var showSpacer = false
     @State private var leadingBleed: CGFloat = 0
+    @State private var mirrorHeader = false
 
     func body(content: Content) -> some View {
         content
             .padding(.leading, leadingBleed)
+            .environment(\.duoMirrorHeader, mirrorHeader)
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -248,6 +250,7 @@ struct DuoTopSpacerModifier: ViewModifier {
     private func refresh(in proxy: GeometryProxy) {
         let leftPane = Self.isPinnedLeftPane(in: proxy)
         showSpacer = leftPane
+        mirrorHeader = leftPane
         // 左半邊：抵銷系統替側邊圓鈕列保留的 leading 安全區（合理範圍內才動作）
         let inset = proxy.safeAreaInsets.leading
         leadingBleed = (leftPane && inset > 24 && inset < 160) ? -inset : 0
@@ -276,5 +279,18 @@ struct DuoTopSpacerModifier: ViewModifier {
 extension View {
     func duoTopSpacer() -> some View {
         modifier(DuoTopSpacerModifier())
+    }
+}
+
+// Duo：詳情頁頁頭是否需要鏡像（封面與文字區塊對調，讓「閱讀」鈕靠外緣）。
+// 由 DuoTopSpacerModifier 依釘選側自動設定。
+private struct DuoMirrorHeaderKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var duoMirrorHeader: Bool {
+        get { self[DuoMirrorHeaderKey.self] }
+        set { self[DuoMirrorHeaderKey.self] = newValue }
     }
 }
