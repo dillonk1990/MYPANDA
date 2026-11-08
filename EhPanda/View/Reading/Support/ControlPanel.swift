@@ -138,12 +138,24 @@ struct ControlPanel<G: Gesture>: View {
         return false
     }
 
-    /// Duo 模式控制條一律放「右緣」：
-    /// - 右半邊釘選 / 全螢幕：右緣=狀態群那一側（IMG_0294 使用者核准位置）。
-    /// - 左半邊釘選：使用者指定改放視窗右側（貼摺痕那側的邊，IMG_0299 反饋
-    ///   「左半往右一欄快靠邊」）。
+    /// Duo 模式控制條放哪一側（IMG_0302 使用者糾正：左半邊釘選要放回左緣/外緣，
+    /// wip5 的「一律右緣」是誤會，恢復 wip4 的三訊號判斷）：
+    /// 1) 摺痕(division) region 偏右 → 本窗是左半邊 → 控制條放左緣（外緣）。
+    /// 2) 系統狀態膠囊(occlusion)在本視窗內 → 這是膠囊那側（右）→ 維持右緣。
+    /// 3) 窄窗（內屏 pane 寬度）且看不到狀態膠囊 → 左半邊 → 控制條放左緣。
     static func sideBarOnLeading(in proxy: GeometryProxy) -> Bool {
-        return false
+        guard #available(iOS 27.1, *) else { return false }
+        let width = proxy.size.width
+        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0 else { continue }
+            if region.frame.midX > width * 0.6 { return true }
+            if region.frame.midX < width * 0.4 { return false }
+        }
+        for region in proxy.reservedRegions(kind: .occlusion, options: .includeInactive) where region.isActive {
+            guard region.frame.width > 0, region.frame.height > 0 else { continue }
+            return false
+        }
+        return width >= 430 && width < 550
     }
 
     /// 側邊控制條的頂部間距：起點落在系統狀態群（時鐘/訊號圈）預留區下緣 +12pt。
