@@ -41,7 +41,7 @@ struct SubSection<Content: View>: View {
                         Text(title).font(.title3.bold())
                         ProgressView()
                             .opacity(isLoading == true ? 1 : 0)
-                            .animation(.default, value: isLoading)
+                            .animation(.duoSpring, value: isLoading)
                     }
                 }
                 .allowsHitTesting(reloadAction != nil)

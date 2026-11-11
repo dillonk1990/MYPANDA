@@ -53,7 +53,7 @@ struct TorrentsView: View {
                 unwrapping: $store.route,
                 case: \.hud
             )
-            .animation(.default, value: store.torrents)
+            .animation(.duoSpring, value: store.torrents)
             .onAppear {
                 store.send(.fetchGalleryTorrents(gid, token))
             }

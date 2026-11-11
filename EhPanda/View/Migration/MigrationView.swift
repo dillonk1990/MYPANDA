@@ -42,7 +42,7 @@ struct MigrationView: View {
                 }
                 .opacity(error != nil ? 1 : 0)
             }
-            .animation(.default, value: store.databaseState)
+            .animation(.duoSpring, value: store.databaseState)
         }
     }
 }

@@ -52,7 +52,7 @@ struct ToplistsView: View {
         )
         .searchable(text: $store.keyword, prompt: L10n.Localizable.Searchable.Prompt.filter)
         .navigationBarBackButtonHidden(store.jumpPageAlertPresented)
-        .animation(.default, value: store.jumpPageAlertPresented)
+        .animation(.duoSpring, value: store.jumpPageAlertPresented)
         .onAppear {
             if store.galleries?.isEmpty != false {
                 DispatchQueue.main.async {

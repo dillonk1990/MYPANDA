@@ -81,7 +81,7 @@ struct CommentsView: View {
             .onAppear {
                 if let scrollCommentID = store.scrollCommentID {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
-                        withAnimation {
+                        withAnimation(.duoSpringSnappy) {
                             proxy.scrollTo(scrollCommentID, anchor: .top)
                         }
                     }
@@ -115,7 +115,7 @@ struct CommentsView: View {
             unwrapping: $store.route,
             case: \.hud
         )
-        .animation(.default, value: store.scrollRowOpacity)
+        .animation(.duoSpring, value: store.scrollRowOpacity)
         .onAppear {
             store.send(.onAppear)
         }

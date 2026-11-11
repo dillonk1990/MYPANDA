@@ -66,9 +66,9 @@ struct ArchivesView: View {
                 unwrapping: $store.route,
                 case: \.messageHUD
             )
-            .animation(.default, value: store.hathArchives)
-            .animation(.default, value: user.galleryPoints)
-            .animation(.default, value: user.credits)
+            .animation(.duoSpring, value: store.hathArchives)
+            .animation(.duoSpring, value: user.galleryPoints)
+            .animation(.duoSpring, value: user.credits)
             .onAppear {
                 store.send(.fetchArchive(gid, galleryURL, archiveURL))
             }
@@ -220,7 +220,7 @@ private struct DownloadButton: View {
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .background(backgroundColor)
-            .animation(.default, value: backgroundColor)
+            .animation(.duoSpring, value: backgroundColor)
             .clipShape(.rect(cornerRadius: 30))
             .glassEffect(.regular.interactive())
             .padding(paddingInsets)

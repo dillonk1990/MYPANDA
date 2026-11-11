@@ -80,8 +80,8 @@ struct QuickSearchView: View {
             }
             .synchronize($store.focusedField, $focusedField)
             .environment(\.editMode, $store.listEditMode)
-            .animation(.default, value: store.quickSearchWords)
-            .animation(.default, value: store.listEditMode)
+            .animation(.duoSpring, value: store.quickSearchWords)
+            .animation(.duoSpring, value: store.listEditMode)
             .onAppear {
                 if store.quickSearchWords.isEmpty {
                     store.send(.fetchQuickSearchWords)

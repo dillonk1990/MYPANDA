@@ -64,8 +64,8 @@ struct GenericList: View {
                 .opacity([.idle, .loading].contains(loadingState) ? 0 : 1)
                 .zIndex(1)
         }
-        .animation(.default, value: loadingState)
-        .animation(.default, value: galleries)
+        .animation(.duoSpring, value: loadingState)
+        .animation(.duoSpring, value: galleries)
         .refreshable { fetchAction?() }
     }
 }
@@ -113,6 +113,7 @@ private struct DetailList: View {
             } label: {
                 GalleryDetailCell(gallery: gallery, setting: setting, translateAction: translateAction)
             }
+            .buttonStyle(DuoPressableStyle())
             .foregroundColor(.primary)
             .onAppear {
                 if gallery == galleries.last {
@@ -186,7 +187,7 @@ private struct WaterfallList: View {
                     GalleryThumbnailCell(gallery: gallery, setting: setting, translateAction: translateAction)
                         .tint(.primary).multilineTextAlignment(.leading)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(DuoPressableStyle())
             }
             .gridStyle(
                 columnsInPortrait: columnsInPortrait, columnsInLandscape: columnsInLandscape,

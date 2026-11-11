@@ -201,9 +201,9 @@ private struct SuggestionsPanel: View {
                 }
             }
         }
-        .animation(.default, value: quickSearchWords)
-        .animation(.default, value: historyGalleries)
-        .animation(.default, value: historyKeywords)
+        .animation(.duoSpring, value: quickSearchWords)
+        .animation(.duoSpring, value: historyGalleries)
+        .animation(.duoSpring, value: historyKeywords)
         .padding(.vertical)
     }
 }

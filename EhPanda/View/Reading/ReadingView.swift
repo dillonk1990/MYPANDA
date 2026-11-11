@@ -77,10 +77,10 @@ struct ReadingView: View {
             )
 
             .animation(.linear(duration: 0.1), value: gestureHandler.offset)
-            .animation(.default, value: liveTextHandler.enablesLiveText)
-            .animation(.default, value: liveTextHandler.liveTextGroups)
-            .animation(.default, value: gestureHandler.scale)
-            .animation(.default, value: store.showsPanel)
+            .animation(.duoSpring, value: liveTextHandler.enablesLiveText)
+            .animation(.duoSpring, value: liveTextHandler.liveTextGroups)
+            .animation(.duoSpring, value: gestureHandler.scale)
+            .animation(.duoSpring, value: store.showsPanel)
             .statusBar(hidden: !store.showsPanel)
             .onDisappear {
                 liveTextHandler.cancelRequests()

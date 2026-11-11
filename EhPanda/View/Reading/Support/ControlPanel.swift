@@ -81,7 +81,7 @@ struct ControlPanel<G: Gesture>: View {
                         dismissButtonHidden: Self.usesSideControlBar
                     )
                     .padding(.bottom, 24)
-                    .animation(.default, value: showsSliderPreview)
+                    .animation(.duoSpring, value: showsSliderPreview)
                     .offset(y: showsPanel ? 0 : 50)
                 }
             }

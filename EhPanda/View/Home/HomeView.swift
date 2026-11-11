@@ -86,7 +86,7 @@ struct HomeView: View {
                 .opacity(store.popularGalleries.isEmpty && error != nil ? 1 : 0)
                 .zIndex(1)
             }
-            .animation(.default, value: store.popularLoadingState)
+            .animation(.duoSpring, value: store.popularLoadingState)
             .onAppear {
                 if store.popularGalleries.isEmpty {
                     store.send(.fetchAllGalleries)
@@ -231,6 +231,7 @@ private struct CardSlideSection: View, Equatable {
                 }
                 .tint(.primary).multilineTextAlignment(.leading)
             }
+            .buttonStyle(DuoPressableStyle())
         }
         .preferredItemSize(Defaults.FrameSize.cardCellSize)
         .interactive(opacity: 0.2).itemSpacing(20)
@@ -311,6 +312,7 @@ private struct VerticalCoverStack: View {
             KFImage(gallery.coverURL).placeholder(placeholder).defaultModifier().scaledToFill()
                 .frame(width: Defaults.ImageSize.rowW, height: Defaults.ImageSize.rowH).cornerRadius(2)
         }
+        .buttonStyle(DuoPressableStyle())
     }
 
     var body: some View {
@@ -417,6 +419,7 @@ private struct VerticalToplistsStack: View {
                         GalleryRankingCell(gallery: galleries[index], ranking: startRanking + index)
                             .tint(.primary).multilineTextAlignment(.leading)
                     }
+                    .buttonStyle(DuoPressableStyle())
                     Divider().opacity(index == galleries.count - 1 ? 0 : 1)
                 }
             }
@@ -444,6 +447,7 @@ private struct MiscGridSection: View {
                         } label: {
                             MiscGridItem(title: type.title, symbol: type.symbol).tint(.primary)
                         }
+                        .buttonStyle(DuoPressableStyle())
                         .padding(.trailing, type == types.last ? 0 : 10)
                     }
                     .withHorizontalSpacing()

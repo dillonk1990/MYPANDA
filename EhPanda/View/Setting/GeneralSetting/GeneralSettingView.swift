@@ -176,10 +176,10 @@ struct GeneralSettingView: View {
                 }
             }
         }
-        .animation(.default, value: tagTranslatorHasCustomTranslations)
-        .animation(.default, value: tagTranslatorLoadingState)
-        .animation(.default, value: enablesTagsExtension)
-        .animation(.default, value: tagTranslatorEmpty)
+        .animation(.duoSpring, value: tagTranslatorHasCustomTranslations)
+        .animation(.duoSpring, value: tagTranslatorLoadingState)
+        .animation(.duoSpring, value: enablesTagsExtension)
+        .animation(.duoSpring, value: tagTranslatorEmpty)
         .onAppear {
             store.send(.checkPasscodeSetting)
             store.send(.calculateWebImageDiskCache)

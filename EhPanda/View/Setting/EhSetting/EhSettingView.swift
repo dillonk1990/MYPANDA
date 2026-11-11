@@ -36,7 +36,7 @@ struct EhSettingView: View {
                     let ehProfile = Binding(unwrapping: $store.ehProfile)
             {
                 form(ehSetting: ehSetting, ehProfile: ehProfile)
-                    .transition(.opacity.animation(.default))
+                    .transition(.opacity.animation(.duoSpringSnappy))
             }
         }
         .onAppear {
@@ -660,7 +660,7 @@ private struct ExcludeToggle: View {
                     .font(.title)
             }
         .onTapGesture {
-            withAnimation { isOn.toggle() }
+            withAnimation(.duoSpringSnappy) { isOn.toggle() }
             HapticsUtil.generateFeedback(style: .soft)
         }
     }

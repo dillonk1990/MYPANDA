@@ -68,7 +68,7 @@ struct LaboratoryCell: View {
         .background(bgColor)
         .cornerRadius(15)
         .lineLimit(1)
-        .animation(.default, value: isOn)
+        .animation(.duoSpring, value: isOn)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 15))
     }
 }

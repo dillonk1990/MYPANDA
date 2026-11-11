@@ -85,7 +85,7 @@ struct LoginView: View {
                 store.send(.login)
             }
         }
-        .animation(.default, value: store.loginState)
+        .animation(.duoSpring, value: store.loginState)
         .toolbar(content: toolbar)
         .navigationTitle(L10n.Localizable.LoginView.Title.login)
         .ignoresSafeArea()
