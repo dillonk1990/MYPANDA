@@ -112,6 +112,6 @@ struct TagCloudCell: View {
             }
         }
         .font(font.bold()).lineLimit(1).foregroundColor(textColor)
-        .padding(padding).background(backgroundColor).cornerRadius(5)
+        .padding(padding).background(backgroundColor).cornerRadius(10)
     }
 }

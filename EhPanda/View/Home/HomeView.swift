@@ -479,7 +479,7 @@ private struct MiscGridItem: View {
             Image(systemSymbol: symbol).font(.system(size: 50, weight: .light, design: .default))
                 .foregroundColor(.secondary).imageScale(.large).offset(x: 20, y: 20)
         }
-        .padding(30).cornerRadius(15).background(Color(.systemGray6).cornerRadius(15))
+        .padding(30).cornerRadius(20).background(Color(.systemGray6).cornerRadius(20)).duoCardShadow(radius: 6, opacity: 0.08)
     }
 }
 

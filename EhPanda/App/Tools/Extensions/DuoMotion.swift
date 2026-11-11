@@ -26,6 +26,15 @@ extension View {
     }
 }
 
+// MARK: - Chip background
+
+extension Color {
+    /// chip／小卡片底色：淺深模式各自適應
+    static func duoChip(dark: Bool) -> Color {
+        dark ? Color(.systemGray5) : Color(.systemGray6)
+    }
+}
+
 // MARK: - Press feedback
 
 /// 按壓縮放：按下微微縮小、放開彈回，卡片與按鈕通用的手感

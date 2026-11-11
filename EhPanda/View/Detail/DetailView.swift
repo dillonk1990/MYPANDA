@@ -513,9 +513,8 @@ private struct DescriptionSection: View {
                                 DescScrollItem(title: info.title, value: info.value, description: info.description)
                             }
                         }
-                        .frame(width: itemWidth).drawingGroup()
+                        .frame(width: itemWidth)
                     }
-                    Divider()
                     if info == infos.last, !duoPaneMode {
                         Button(action: navigateGalleryInfosAction) {
                             Image(systemSymbol: .ellipsis)
@@ -527,7 +526,7 @@ private struct DescriptionSection: View {
                 .withHorizontalSpacing()
             }
         }
-        .frame(height: 60)
+        .frame(height: 78)
     }
 }
 
@@ -542,6 +541,7 @@ private extension DescriptionSection {
         var isRating = false
     }
     struct DescScrollItem: View {
+        @Environment(\.colorScheme) private var colorScheme
         private let title: String
         private let value: String
         private let description: String
@@ -558,9 +558,13 @@ private extension DescriptionSection {
                 Text(value).fontWeight(.medium).font(.title3).lineLimit(1)
                 Text(description).font(.caption)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8).padding(.horizontal, 4)
+            .background(Color.duoChip(dark: colorScheme == .dark)).cornerRadius(12)
         }
     }
     struct DescScrollRatingItem: View {
+        @Environment(\.colorScheme) private var colorScheme
         private let title: String
         private let rating: Float
 
@@ -575,12 +579,16 @@ private extension DescriptionSection {
                 Text(String(format: "%.2f", rating)).fontWeight(.medium).font(.title3)
                 RatingView(rating: rating).font(.system(size: 12)).foregroundStyle(.primary)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8).padding(.horizontal, 4)
+            .background(Color.duoChip(dark: colorScheme == .dark)).cornerRadius(12)
         }
     }
 }
 
 // MARK: ActionSection
 private struct ActionSection: View {
+    @Environment(\.colorScheme) private var colorScheme
     private let galleryDetail: GalleryDetail
     private let userRating: Int
     private let showUserRating: Bool
@@ -617,12 +625,16 @@ private struct ActionSection: View {
                         Spacer()
                     }
                     .disabled(!CookieUtil.didLogin)
+                    .padding(.vertical, 10)
+                    .background(Color.duoChip(dark: colorScheme == .dark)).cornerRadius(14)
                     Button(action: navigateSimilarGalleryAction) {
                         Spacer()
                         Image(systemSymbol: .photoOnRectangleAngled)
                         Text(L10n.Localizable.DetailView.ActionSection.Button.similarGallery).bold()
                         Spacer()
                     }
+                    .padding(.vertical, 10)
+                    .background(Color.duoChip(dark: colorScheme == .dark)).cornerRadius(14)
                 }
                 .font(.callout).foregroundStyle(.primary)
             }
@@ -725,7 +737,7 @@ private extension TagsSection {
             HStack(alignment: .top) {
                 Text(tag.namespace?.value ?? tag.rawNamespace).font(.subheadline.bold())
                     .foregroundColor(reversedPrimary).padding(padding)
-                    .background(Color(.systemGray)).cornerRadius(5)
+                    .background(Color(.systemGray)).cornerRadius(10)
                 TagCloudView(data: tag.contents) { content in
                     let (_, translation) = translateAction(content.rawNamespace + content.text)
                     Button {
