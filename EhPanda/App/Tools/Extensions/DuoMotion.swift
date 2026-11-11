@@ -17,6 +17,15 @@ extension Animation {
     static let duoSpringSnappy = Animation.spring(response: 0.26, dampingFraction: 0.8)
 }
 
+// MARK: - Soft card shadow
+
+extension View {
+    /// 卡片風共用的柔和陰影：淺而散，讓卡片浮起來
+    func duoCardShadow(radius: CGFloat = 8, opacity: Double = 0.10) -> some View {
+        shadow(color: Color.black.opacity(opacity), radius: radius, x: 0, y: 4)
+    }
+}
+
 // MARK: - Press feedback
 
 /// 按壓縮放：按下微微縮小、放開彈回，卡片與按鈕通用的手感

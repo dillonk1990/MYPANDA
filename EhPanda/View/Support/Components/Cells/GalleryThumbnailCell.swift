@@ -77,7 +77,7 @@ struct GalleryThumbnailCell: View {
             }
             .padding()
         }
-        .background(backgroundColor).cornerRadius(15)
+        .background(backgroundColor).cornerRadius(18).duoCardShadow(radius: 6, opacity: 0.08)
     }
 }
 

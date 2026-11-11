@@ -63,7 +63,7 @@ struct GalleryCardCell: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 20)
         }
-        .frame(width: Defaults.FrameSize.cardCellWidth).cornerRadius(15)
+        .frame(width: Defaults.FrameSize.cardCellWidth).cornerRadius(20).duoCardShadow()
     }
 }
 

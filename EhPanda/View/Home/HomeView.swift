@@ -310,7 +310,7 @@ private struct VerticalCoverStack: View {
             navigateAction(gallery.id)
         } label: {
             KFImage(gallery.coverURL).placeholder(placeholder).defaultModifier().scaledToFill()
-                .frame(width: Defaults.ImageSize.rowW, height: Defaults.ImageSize.rowH).cornerRadius(2)
+                .frame(width: Defaults.ImageSize.rowW, height: Defaults.ImageSize.rowH).cornerRadius(12)
         }
         .buttonStyle(DuoPressableStyle())
     }

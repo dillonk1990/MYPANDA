@@ -28,6 +28,7 @@ struct GalleryDetailCell: View {
             KFImage(gallery.coverURL)
                 .placeholder { Placeholder(style: .activity(ratio: Defaults.ImageSize.rowAspect)) }
                 .defaultModifier().scaledToFit().frame(width: Defaults.ImageSize.rowW, height: Defaults.ImageSize.rowH)
+                .cornerRadius(8)
             VStack(alignment: .leading, spacing: 5) {
                 Text(gallery.title).lineLimit(3).font(.headline).foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
